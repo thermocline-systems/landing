@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thermocline — Heat rejection, sold.</title>
+  <meta name="description" content="Thermocline sells heat rejection. We turn waste heat into a settled trade." />
+  <style>
+    :root {
+      --bg: #1c1d1f;
+      --fg: #e8edf2;
+      --muted: #8b9097;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle thermal sheen drifting behind everything */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      background:
+        radial-gradient(40% 50% at 20% 30%, rgba(45, 175, 230, 0.10), transparent 70%),
+        radial-gradient(45% 55% at 80% 70%, rgba(240, 90, 40, 0.10), transparent 70%);
+      filter: blur(40px);
+      z-index: 0;
+      animation: drift 22s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(-2%, -1%, 0) scale(1); }
+      to   { transform: translate3d(2%, 2%, 0) scale(1.08); }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: clamp(28px, 5vw, 56px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      font-size: 17px;
+    }
+
+    .mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: linear-gradient(160deg, #2db4e6 0%, #7bd44a 45%, #f1903a 75%, #ef4b2b 100%);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(40px, 8vh, 90px) 0;
+    }
+
+    h1 {
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 0.98;
+      font-size: clamp(48px, 11vw, 132px);
+      max-width: 13ch;
+    }
+
+    h1 .grad {
+      background: linear-gradient(95deg,
+        #2db4e6 0%,
+        #4fc3e3 18%,
+        #7bd44a 42%,
+        #aed24a 55%,
+        #f1b13a 74%,
+        #f1903a 86%,
+        #ef4b2b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sub {
+      margin-top: clamp(28px, 4vh, 44px);
+      font-size: clamp(17px, 2.2vw, 22px);
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 42ch;
+      font-weight: 400;
+    }
+
+    .cta {
+      margin-top: clamp(32px, 5vh, 48px);
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #2db4e6 0%, #7bd44a 50%, #ef4b2b 100%);
+      color: #0e0f10;
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); }
+
+    .btn-ghost {
+      color: var(--fg);
+      border: 1px solid rgba(232, 237, 242, 0.18);
+    }
+
+    .btn-ghost:hover { border-color: rgba(232, 237, 242, 0.4); }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 clamp(28px, 5vw, 56px) clamp(28px, 5vw, 48px);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .scale {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .scale .bar {
+      width: 84px;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2db4e6, #7bd44a, #f1903a, #ef4b2b);
+    }
+
+    .scale span { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="mark" aria-hidden="true"></span>
+      Thermocline
+    </header>
+
+    <main>
+      <h1>
+        Heat is a market.<br />
+        <span class="grad">We make it&nbsp;clear.</span>
+      </h1>
+
+      <p class="sub">
+        Every datacenter, every furnace, every chiller throws away heat.
+        Thermocline turns that rejected heat into something you can price,
+        move, and settle.
+      </p>
+
+      <div class="cta">
+        <a class="btn btn-primary" href="#">Request access</a>
+        <a class="btn btn-ghost" href="#">How it works</a>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <span>© 2026 Thermocline</span>
+    <div class="scale" aria-hidden="true">
+      <span>cold</span>
+      <span class="bar"></span>
+      <span>hot</span>
+    </div>
+  </footer>
+</body>
+</html>
