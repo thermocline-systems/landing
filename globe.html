@@ -112,6 +112,8 @@
   <script>
     const COUNTRIES_URL =
       "https://unpkg.com/globe.gl@2.32.0/example/datasets/ne_110m_admin_0_countries.geojson";
+    const US_STATES_URL =
+      "https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json";
 
     const world = Globe()(document.getElementById("globe"))
       .backgroundColor("rgba(0,0,0,0)")
@@ -146,16 +148,34 @@
       } catch (e) { return 0; }
     }
 
-    fetch(COUNTRIES_URL)
-      .then((r) => r.json())
-      .then((geo) => {
-        const features = geo.features.filter((f) => f.properties.ISO_A2 !== "AQ");
+    // dim a hex color by alpha for secondary (state) borders
+    function dim(hex, alpha) {
+      const n = parseInt(hex.slice(1), 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+    }
+
+    Promise.all([
+      fetch(COUNTRIES_URL).then((r) => r.json()),
+      fetch(US_STATES_URL).then((r) => r.json()).catch(() => ({ features: [] })),
+    ])
+      .then(([countries, states]) => {
+        const countryFeatures = countries.features
+          .filter((f) => f.properties.ISO_A2 !== "AQ")
+          .map((f) => ((f._kind = "country"), f));
+        const stateFeatures = (states.features || []).map(
+          (f) => ((f._kind = "state"), f)
+        );
+        const features = [...countryFeatures, ...stateFeatures];
+
         world
           .polygonsData(features)
           .polygonCapColor(() => "rgba(0,0,0,0)")
           .polygonSideColor(() => "rgba(0,0,0,0)")
-          .polygonStrokeColor((f) => bandColor(centroidLat(f)))
-          .polygonAltitude(0.006)
+          .polygonStrokeColor((f) => {
+            const c = bandColor(centroidLat(f));
+            return f._kind === "state" ? dim(c, 0.4) : c;
+          })
+          .polygonAltitude((f) => (f._kind === "state" ? 0.005 : 0.006))
           .polygonsTransitionDuration(0);
         document.getElementById("loading").classList.add("hidden");
       })
