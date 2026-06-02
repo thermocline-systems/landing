@@ -188,7 +188,11 @@
   </div>
 
   <footer>
-    <span>© 2026 Thermocline</span>
+    <span>© <span id="year">2026</span> Thermocline</span>
   </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
