@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thermocline — Heat rejection, sold.</title>
-  <meta name="description" content="Thermocline sells heat rejection. We turn waste heat into a settled trade." />
+  <title>Thermocline — Dry is the new wet.</title>
+  <meta name="description" content="Thermocline. Dry is the new wet." />
   <style>
     :root {
       --bg: #1c1d1f;
@@ -31,8 +31,8 @@
       position: fixed;
       inset: -20%;
       background:
-        radial-gradient(40% 50% at 20% 30%, rgba(45, 175, 230, 0.10), transparent 70%),
-        radial-gradient(45% 55% at 80% 70%, rgba(240, 90, 40, 0.10), transparent 70%);
+        radial-gradient(40% 50% at 20% 30%, rgba(240, 90, 40, 0.10), transparent 70%),
+        radial-gradient(45% 55% at 80% 70%, rgba(45, 175, 230, 0.10), transparent 70%);
       filter: blur(40px);
       z-index: 0;
       animation: drift 22s ease-in-out infinite alternate;
@@ -69,7 +69,7 @@
       width: 26px;
       height: 26px;
       border-radius: 7px;
-      background: linear-gradient(160deg, #2db4e6 0%, #7bd44a 45%, #f1903a 75%, #ef4b2b 100%);
+      background: linear-gradient(160deg, #ef4b2b 0%, #f1903a 30%, #7bd44a 60%, #2db4e6 100%);
     }
 
     main {
@@ -90,13 +90,13 @@
 
     h1 .grad {
       background: linear-gradient(95deg,
-        #2db4e6 0%,
-        #4fc3e3 18%,
-        #7bd44a 42%,
-        #aed24a 55%,
-        #f1b13a 74%,
-        #f1903a 86%,
-        #ef4b2b 100%);
+        #ef4b2b 0%,
+        #f1903a 14%,
+        #f1b13a 26%,
+        #aed24a 45%,
+        #7bd44a 58%,
+        #4fc3e3 82%,
+        #2db4e6 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -132,7 +132,7 @@
     }
 
     .btn-primary {
-      background: linear-gradient(95deg, #2db4e6 0%, #7bd44a 50%, #ef4b2b 100%);
+      background: linear-gradient(95deg, #ef4b2b 0%, #7bd44a 50%, #2db4e6 100%);
       color: #0e0f10;
     }
 
@@ -171,7 +171,7 @@
       width: 84px;
       height: 6px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #2db4e6, #7bd44a, #f1903a, #ef4b2b);
+      background: linear-gradient(90deg, #ef4b2b, #f1903a, #7bd44a, #2db4e6);
     }
 
     .scale span { font-variant-numeric: tabular-nums; }
@@ -186,29 +186,18 @@
 
     <main>
       <h1>
-        Heat is a market.<br />
-        <span class="grad">We make it&nbsp;clear.</span>
+        Dry is the<br />
+        <span class="grad">new wet.</span>
       </h1>
-
-      <p class="sub">
-        Every datacenter, every furnace, every chiller throws away heat.
-        Thermocline turns that rejected heat into something you can price,
-        move, and settle.
-      </p>
-
-      <div class="cta">
-        <a class="btn btn-primary" href="#">Request access</a>
-        <a class="btn btn-ghost" href="#">How it works</a>
-      </div>
     </main>
   </div>
 
   <footer>
     <span>© 2026 Thermocline</span>
     <div class="scale" aria-hidden="true">
-      <span>cold</span>
-      <span class="bar"></span>
       <span>hot</span>
+      <span class="bar"></span>
+      <span>cold</span>
     </div>
   </footer>
 </body>
