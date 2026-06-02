@@ -93,6 +93,67 @@
       transition: opacity 0.4s ease;
     }
     .loading.hidden { opacity: 0; pointer-events: none; }
+
+    /* layer toggle */
+    .controls {
+      top: clamp(24px, 5vw, 48px);
+      right: clamp(24px, 5vw, 48px);
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(20, 22, 26, 0.6);
+      border: 1px solid rgba(232, 237, 242, 0.1);
+      backdrop-filter: blur(8px);
+      pointer-events: auto;
+    }
+
+    .controls .seg {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      padding: 7px 15px;
+      border-radius: 999px;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .controls .seg:hover { color: var(--fg); }
+    .controls .seg.active { color: #0e0f10; background: var(--fg); }
+
+    /* legend */
+    .legend {
+      bottom: clamp(24px, 5vw, 44px);
+      right: clamp(24px, 5vw, 48px);
+      width: clamp(180px, 26vw, 240px);
+      text-align: right;
+    }
+    .legend-bar {
+      height: 7px;
+      border-radius: 999px;
+      margin-bottom: 7px;
+    }
+    .legend-ends {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.01em;
+    }
+    .legend-label {
+      margin-top: 8px;
+      color: var(--fg);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .legend-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -103,6 +164,18 @@
   </div>
   <div class="overlay caption">
     Heat rejection, everywhere it runs hot.
+  </div>
+
+  <div class="overlay controls" id="controls">
+    <button class="seg active" data-layer="heat">Heat</button>
+    <button class="seg" data-layer="freeze">Freeze</button>
+  </div>
+
+  <div class="overlay legend" id="legend">
+    <div class="legend-bar" id="legendBar"></div>
+    <div class="legend-ends"><span id="legendLo"></span><span id="legendHi"></span></div>
+    <div class="legend-label" id="legendLabel"></div>
+    <div class="legend-sub" id="legendSub"></div>
   </div>
 
   <div class="loading" id="loading">Loading globe…</div>
@@ -171,10 +244,11 @@
           .polygonsData(features)
           .polygonCapColor(() => "rgba(0,0,0,0)")
           .polygonSideColor(() => "rgba(0,0,0,0)")
-          .polygonStrokeColor((f) => {
-            const c = bandColor(centroidLat(f));
-            return f._kind === "state" ? dim(c, 0.4) : c;
-          })
+          // borders hidden for now — heatmap overlay carries the geography.
+          // restore by returning the gradient color instead of transparent:
+          // const c = bandColor(centroidLat(f));
+          // return f._kind === "state" ? dim(c, 0.4) : c;
+          .polygonStrokeColor(() => "rgba(0,0,0,0)")
           .polygonAltitude((f) => (f._kind === "state" ? 0.005 : 0.006))
           .polygonsTransitionDuration(0);
         document.getElementById("loading").classList.add("hidden");
@@ -191,6 +265,112 @@
     window.addEventListener("resize", size);
     size();
     world.pointOfView({ lat: 25, lng: 10, altitude: 2.4 });
+
+    // ---- climate overlays (equirectangular textures painted on the sphere) ----
+    const OVERLAYS = {
+      heat: {
+        url: "overlay/heat_adiabatic_overlay.png",
+        label: "Adiabatic-assist demand",
+        sub: "Where pure-dry cooling needs a hand.",
+        stops: ["#19c3e6", "#38bdf8", "#a3e635", "#facc15", "#f59e0b", "#ef4444"],
+        lo: "Pure dry",
+        hi: "Adiabatic",
+      },
+      freeze: {
+        url: "overlay/freeze_antifreeze_overlay.png",
+        label: "Anti-freeze mode",
+        sub: "Where glycol runs year-round.",
+        stops: ["#1a2433", "#b794f4", "#9b6ef0", "#7c3aed", "#5b21b6", "#3b0a78"],
+        lo: "Never",
+        hi: "Year-round",
+      },
+    };
+
+    // Find the base globe mesh, then attach overlays to its PARENT GROUP.
+    // The country borders live in that group's frame, but the base mesh itself
+    // carries a -90° spin the borders don't — so we attach to the group (not the
+    // mesh) and re-apply a +90° rotation so the texture's longitude lines up.
+    let baseGlobe = null;
+    world.scene().traverse((o) => {
+      if (
+        o.isMesh &&
+        o.geometry &&
+        o.geometry.type === "SphereGeometry" &&
+        o.geometry.parameters.radius === 100 &&
+        o.material.type === "MeshPhongMaterial"
+      ) {
+        baseGlobe = o;
+      }
+    });
+    const globeGroup = (baseGlobe && baseGlobe.parent) || world.scene();
+
+    const loader = new THREE.TextureLoader();
+    const meshes = {};
+    let bump = 0.4;
+    Object.entries(OVERLAYS).forEach(([key, cfg]) => {
+      const tex = loader.load(cfg.url);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = world.renderer().capabilities.getMaxAnisotropy();
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(100 + bump, 128, 128),
+        new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          depthTest: false, // front-face sphere just above the globe; no z-fight
+          depthWrite: false,
+          side: THREE.FrontSide, // only the near hemisphere draws
+          opacity: 0,
+        })
+      );
+      bump += 0.1;
+      mesh.renderOrder = 3;
+      mesh.rotation.y = Math.PI / 2; // align texture longitude with the borders
+      globeGroup.add(mesh);
+      meshes[key] = mesh;
+    });
+
+    const PEAK = 0.92;
+    let active = null;
+
+    // lightweight opacity crossfade
+    const fades = {};
+    function fadeTo(key, target) {
+      cancelAnimationFrame(fades[key]);
+      const m = meshes[key].material;
+      const start = m.opacity;
+      const t0 = performance.now();
+      const dur = 450;
+      const step = (now) => {
+        const p = Math.min(1, (now - t0) / dur);
+        m.opacity = start + (target - start) * p;
+        if (p < 1) fades[key] = requestAnimationFrame(step);
+      };
+      fades[key] = requestAnimationFrame(step);
+    }
+
+    function setLayer(key) {
+      if (key === active) return;
+      active = key;
+      Object.keys(meshes).forEach((k) => fadeTo(k, k === key ? PEAK : 0));
+
+      const cfg = OVERLAYS[key];
+      document.getElementById("legendBar").style.background =
+        "linear-gradient(90deg, " + cfg.stops.join(", ") + ")";
+      document.getElementById("legendLo").textContent = cfg.lo;
+      document.getElementById("legendHi").textContent = cfg.hi;
+      document.getElementById("legendLabel").textContent = cfg.label;
+      document.getElementById("legendSub").textContent = cfg.sub;
+
+      document.querySelectorAll("#controls .seg").forEach((b) =>
+        b.classList.toggle("active", b.dataset.layer === key)
+      );
+    }
+
+    document.querySelectorAll("#controls .seg").forEach((b) =>
+      b.addEventListener("click", () => setLayer(b.dataset.layer))
+    );
+
+    setLayer("heat");
   </script>
 </body>
 </html>
