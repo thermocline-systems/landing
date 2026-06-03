@@ -155,6 +155,57 @@
       font-size: 12px;
       line-height: 1.4;
     }
+
+    /* loop-temperature slider */
+    .tempctl {
+      left: 50%;
+      bottom: clamp(22px, 4vw, 40px);
+      transform: translateX(-50%);
+      width: min(440px, 78vw);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .temp-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+    .temp-label .temp-sub {
+      color: var(--muted);
+      font-weight: 400;
+    }
+    #tempSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+      /* cold -> hot track */
+      background: linear-gradient(90deg, #19c3e6, #38bdf8, #a3e635, #facc15, #f59e0b, #ef4444);
+    }
+    #tempSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--fg);
+      border: 2px solid #0e0f10;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+    #tempSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--fg);
+      border: 2px solid #0e0f10;
+    }
   </style>
 </head>
 <body>
@@ -176,6 +227,15 @@
     <div class="legend-bar" id="legendBar"></div>
     <div class="legend-ends"><span id="legendLo"></span><span id="legendHi"></span></div>
     <div class="legend-label" id="legendLabel"></div>
+  </div>
+
+  <div class="overlay tempctl" id="tempctl">
+    <div class="temp-label">
+      <span id="tempVal">45</span>&deg;C loop
+      <span class="temp-sub">&middot; pure-dry to <span id="tempDry">42.5</span>&deg;C ambient</span>
+    </div>
+    <input id="tempSlider" type="range" min="40" max="60" step="1" value="45"
+           aria-label="Loop temperature" />
   </div>
 
   <div class="loading" id="loading">Loading globe…</div>
@@ -292,7 +352,7 @@
     // ---- climate overlays (equirectangular textures painted on the sphere) ----
     const OVERLAYS = {
       heat: {
-        url: "overlay/heat_adiabatic_overlay.png",
+        url: "overlay/heat_frames/loop_45.png",
         label: "Adiabatic-assist demand",
         sub: "Where pure-dry cooling needs a hand.",
         stops: ["#19c3e6", "#38bdf8", "#a3e635", "#facc15", "#f59e0b", "#ef4444"],
@@ -405,6 +465,10 @@
       document.querySelectorAll("#controls .seg").forEach((b) =>
         b.classList.toggle("active", b.dataset.layer === key)
       );
+
+      // the loop-temp slider only applies to the heat layer
+      document.getElementById("tempctl").style.display =
+        key === "heat" ? "flex" : "none";
     }
 
     document.querySelectorAll("#controls .seg").forEach((b) =>
@@ -412,6 +476,37 @@
     );
 
     setLayer("heat");
+
+    // ---- loop-temperature slider --------------------------------------
+    // Preload every frame (40..60 C) up front and pre-upload to the GPU so
+    // dragging the slider just swaps an already-resident texture — no hitch.
+    const T_MIN = 40, T_MAX = 60, T_DEFAULT = 45;
+    const heatFrames = {};
+    const fLoader = new THREE.TextureLoader();
+    const maxAniso = world.renderer().capabilities.getMaxAnisotropy();
+    for (let T = T_MIN; T <= T_MAX; T++) {
+      const tex = fLoader.load(
+        `overlay/heat_frames/loop_${T}.png`,
+        (t) => { try { world.renderer().initTexture(t); } catch (e) {} }
+      );
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = maxAniso;
+      heatFrames[T] = tex;
+    }
+
+    function setLoopTemp(T) {
+      const tex = heatFrames[T];
+      if (tex && meshes.heat) {
+        meshes.heat.material.map = tex;
+        meshes.heat.material.needsUpdate = true;
+      }
+      document.getElementById("tempVal").textContent = T;
+      document.getElementById("tempDry").textContent = (T - 2.5).toFixed(1);
+    }
+
+    const slider = document.getElementById("tempSlider");
+    slider.addEventListener("input", () => setLoopTemp(+slider.value));
+    setLoopTemp(T_DEFAULT);
 
     // always-current copyright year
     document.getElementById("year").textContent = new Date().getFullYear();
