@@ -95,9 +95,8 @@
     }
     .loading.hidden { opacity: 0; pointer-events: none; }
 
-    /* segmented toggles (layer + view) */
-    .controls,
-    .viewctl {
+    /* layer toggle */
+    .controls {
       top: clamp(24px, 5vw, 48px);
       right: clamp(24px, 5vw, 48px);
       display: flex;
@@ -109,13 +108,7 @@
       backdrop-filter: blur(8px);
       pointer-events: auto;
     }
-    /* view toggle sits just under the layer toggle */
-    .viewctl {
-      top: calc(clamp(24px, 5vw, 48px) + 50px);
-    }
-
-    .controls .seg,
-    .viewctl .seg {
+    .controls .seg {
       appearance: none;
       border: 0;
       cursor: pointer;
@@ -128,12 +121,37 @@
       border-radius: 999px;
       transition: color 0.2s ease, background 0.2s ease;
     }
-    .controls .seg:hover,
-    .viewctl .seg:hover { color: var(--fg); }
-    .controls .seg.active,
-    .viewctl .seg.active { color: #0e0f10; background: var(--fg); }
+    .controls .seg:hover { color: var(--fg); }
+    .controls .seg.active { color: #0e0f10; background: var(--fg); }
 
-    /* flat (equirectangular) map view */
+    /* projection picker (sits under the layer toggle) */
+    .projctl {
+      top: calc(clamp(24px, 5vw, 48px) + 50px);
+      right: clamp(24px, 5vw, 48px);
+      pointer-events: auto;
+    }
+    #projSelect {
+      appearance: none;
+      -webkit-appearance: none;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      background: rgba(20, 22, 26, 0.6);
+      border: 1px solid rgba(232, 237, 242, 0.12);
+      backdrop-filter: blur(8px);
+      border-radius: 999px;
+      padding: 8px 32px 8px 16px;
+      cursor: pointer;
+      outline: none;
+      /* chevron */
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%238b9097' stroke-width='1.5'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    #projSelect option { background: #1c1d1f; color: var(--fg); }
+
+    /* flat / projected map view */
     .flatview {
       position: fixed;
       inset: 0;
@@ -141,28 +159,14 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 9vh 4vw;
+      padding: 8vh 4vw 12vh;
     }
-    .flat-inner {
-      position: relative;
-      width: min(94vw, calc((100vh - 18vh) * 2));
-      aspect-ratio: 2 / 1;
-      background: #0b0c0d;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.55);
+    #projCanvas {
+      max-width: 94vw;
+      max-height: 80vh;
+      width: auto;
+      height: auto;
     }
-    .flat-inner img,
-    .flat-inner svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    #flatBorders path { fill: none; vector-effect: non-scaling-stroke; }
-    #flatBorders .b-country { stroke: rgba(232, 237, 242, 0.45); stroke-width: 0.8px; }
-    #flatBorders .b-state { stroke: rgba(232, 237, 242, 0.16); stroke-width: 0.6px; }
 
     /* legend */
     .legend {
@@ -262,16 +266,19 @@
     <button class="seg" data-layer="freeze">Freeze</button>
   </div>
 
-  <div class="overlay viewctl" id="viewctl">
-    <button class="seg active" data-view="globe">Globe</button>
-    <button class="seg" data-view="flat">Flat</button>
+  <div class="overlay projctl" id="projctl">
+    <select id="projSelect" aria-label="Map projection">
+      <option value="globe">Globe</option>
+      <option value="equirect">Flat</option>
+      <option value="mercator">Mercator</option>
+      <option value="robinson">Robinson</option>
+      <option value="august">August</option>
+      <option value="vandergrinten">Van der Grinten</option>
+    </select>
   </div>
 
   <div class="flatview" id="flat">
-    <div class="flat-inner">
-      <img id="flatImg" alt="World heat-rejection map" />
-      <svg id="flatBorders" viewBox="0 0 360 180" preserveAspectRatio="none"></svg>
-    </div>
+    <canvas id="projCanvas"></canvas>
   </div>
 
   <div class="overlay legend" id="legend">
@@ -293,6 +300,8 @@
 
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+  <script src="https://unpkg.com/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
   <script>
     const COUNTRIES_URL =
       "https://unpkg.com/globe.gl@2.32.0/example/datasets/ne_110m_admin_0_countries.geojson";
@@ -340,50 +349,8 @@
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
 
-    // --- flat (equirectangular) border SVG --------------------------------
-    // lon/lat -> plate-carrée: x = lon+180 (0..360), y = 90-lat (0..180).
-    // Break the path on antimeridian jumps so wrapping rings don't draw a
-    // stray line across the map.
-    function featurePath(f) {
-      const g = f.geometry;
-      if (!g) return "";
-      const polys =
-        g.type === "Polygon" ? [g.coordinates]
-        : g.type === "MultiPolygon" ? g.coordinates
-        : [];
-      let d = "";
-      for (const poly of polys) {
-        for (const ring of poly) {
-          let started = false, prevLon = null;
-          for (const pt of ring) {
-            const lon = pt[0], lat = pt[1];
-            const x = (lon + 180).toFixed(2), y = (90 - lat).toFixed(2);
-            if (!started || (prevLon !== null && Math.abs(lon - prevLon) > 180)) {
-              d += `M${x} ${y} `;
-              started = true;
-            } else {
-              d += `L${x} ${y} `;
-            }
-            prevLon = lon;
-          }
-        }
-      }
-      return d;
-    }
-    function buildFlatBorders(countryFeatures, stateFeatures) {
-      const ns = "http://www.w3.org/2000/svg";
-      const svg = document.getElementById("flatBorders");
-      const add = (feats, cls) => {
-        let d = "";
-        for (const f of feats) d += featurePath(f);
-        const p = document.createElementNS(ns, "path");
-        p.setAttribute("d", d);
-        p.setAttribute("class", cls);
-        svg.appendChild(p);
-      };
-      add(stateFeatures, "b-state");
-      add(countryFeatures, "b-country");
-    }
+    // geojson border features, shared by the globe and the projected views
+    const FEATURES = { country: [], state: [] };
 
     // Country + US-state borders, drawn as thin strokes ON TOP of the heatmap.
     Promise.all([
@@ -398,8 +365,10 @@
           (f) => ((f._kind = "state"), f)
         );
 
-        // build the flat-map borders from the same data (equirectangular)
-        buildFlatBorders(countryFeatures, stateFeatures);
+        // share the border features with the projected (flat) views
+        FEATURES.country = countryFeatures;
+        FEATURES.state = stateFeatures;
+        scheduleRender(); // in case a flat projection is already selected
 
         // Configure zero transition + all accessors BEFORE setting the data,
         // so the borders appear instantly in their final position — no enter
@@ -573,7 +542,7 @@
     document.querySelectorAll("#controls .seg").forEach((b) =>
       b.addEventListener("click", () => {
         setLayer(b.dataset.layer);
-        renderFlat(); // keep flat view in sync when switching layers
+        scheduleRender(); // keep projected view in sync when switching layers
       })
     );
 
@@ -606,46 +575,147 @@
       }
       document.getElementById("tempVal").textContent = T;
       document.getElementById("tempDry").textContent = (T - 2.5).toFixed(1);
-      renderFlat(); // keep the flat map in sync
+      scheduleRender(); // keep the projected view in sync
     }
 
     const slider = document.getElementById("tempSlider");
     slider.addEventListener("input", () => setLoopTemp(+slider.value));
 
-    // ---- Globe / Flat view toggle -------------------------------------
-    // The flat view is the same equirectangular texture (the PNG already IS a
-    // flat map) with the border SVG over it — so Heat/Freeze + the slider drive
-    // both views identically.
-    let viewMode = "globe";
-    function flatSrc() {
-      return active === "freeze"
-        ? OVERLAYS.freeze.url
-        : `overlay/heat_frames/loop_${loopTemp}.png`;
+    // ---- Projections (flat views rendered with d3-geo) -----------------
+    // Each non-globe projection inverse-samples the equirectangular frame into
+    // a canvas, then strokes graticule + borders on top with d3.geoPath. The
+    // Heat/Freeze toggle and the loop-temp slider drive every projection.
+    const projCanvas = document.getElementById("projCanvas");
+    const pctx = projCanvas.getContext("2d");
+    const PROJ_W = 880, PROJ_H = 540;
+    projCanvas.width = PROJ_W;
+    projCanvas.height = PROJ_H;
+    let projName = "globe";
+
+    function makeProjection(name) {
+      let p;
+      if (name === "mercator") p = d3.geoMercator();
+      else if (name === "robinson") p = d3.geoRobinson();
+      else if (name === "august") p = d3.geoAugust();
+      else if (name === "vandergrinten") p = d3.geoVanDerGrinten();
+      else p = d3.geoEquirectangular();
+      p.fitExtent([[12, 12], [PROJ_W - 12, PROJ_H - 12]], { type: "Sphere" });
+      return p;
     }
-    function renderFlat() {
-      if (viewMode !== "flat") return;
-      document.getElementById("flatImg").src = flatSrc();
+
+    // current heat/freeze frame -> ImageData (cached) for raster resampling
+    const srcCache = {};
+    function currentSourceImageData() {
+      const key = active === "freeze" ? "freeze" : `loop_${loopTemp}`;
+      if (srcCache[key]) return srcCache[key];
+      const tex = active === "freeze" ? meshes.freeze.material.map : heatFrames[loopTemp];
+      const img = tex && tex.image;
+      if (!img || !img.complete || !(img.naturalWidth || img.width)) return null;
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth || img.width;
+      c.height = img.naturalHeight || img.height;
+      const cx = c.getContext("2d");
+      cx.drawImage(img, 0, 0);
+      const id = cx.getImageData(0, 0, c.width, c.height);
+      srcCache[key] = id;
+      return id;
     }
-    function setView(mode) {
-      viewMode = mode;
+
+    // Per-projection geometry cache: the expensive inverse (lon/lat per output
+    // pixel) depends only on the projection, not the heat frame — so compute it
+    // once. Sliding temperature / toggling layer then just copies pixels.
+    const geomCache = {};
+    function projGeometry(name) {
+      if (geomCache[name]) return geomCache[name];
+      const proj = makeProjection(name);
+      const U = new Float32Array(PROJ_W * PROJ_H);
+      const V = new Float32Array(PROJ_W * PROJ_H);
+      const M = new Uint8Array(PROJ_W * PROJ_H); // 1 = inside sphere
+      for (let y = 0; y < PROJ_H; y++) {
+        for (let x = 0; x < PROJ_W; x++) {
+          const i = y * PROJ_W + x;
+          const px = x + 0.5, py = y + 0.5;
+          const ll = proj.invert([px, py]);
+          if (!ll) continue;
+          const lon = ll[0], lat = ll[1];
+          if (lon < -180 || lon > 180 || lat < -90 || lat > 90) continue;
+          // round-trip check: reject pixels outside the single world (cylindrical
+          // projections like Mercator wrap and would otherwise tile/repeat).
+          const fwd = proj([lon, lat]);
+          if (!fwd || Math.abs(fwd[0] - px) > 1.5 || Math.abs(fwd[1] - py) > 1.5) continue;
+          U[i] = (lon + 180) / 360;
+          V[i] = (90 - lat) / 180;
+          M[i] = 1;
+        }
+      }
+      const g = { proj, U, V, M };
+      geomCache[name] = g;
+      return g;
+    }
+
+    function renderProjection() {
+      if (projName === "globe" || typeof d3 === "undefined") return;
+      const geom = projGeometry(projName);
+      const path = d3.geoPath(geom.proj, pctx);
+      pctx.clearRect(0, 0, PROJ_W, PROJ_H);
+
+      // ocean disc (raster has transparent oceans, so dark shows through)
+      pctx.beginPath(); path({ type: "Sphere" });
+      pctx.fillStyle = "#0b0c0d"; pctx.fill();
+
+      const src = currentSourceImageData();
+      if (src) {
+        const out = pctx.getImageData(0, 0, PROJ_W, PROJ_H);
+        const od = out.data, sd = src.data, sw = src.width, sh = src.height;
+        const U = geom.U, V = geom.V, M = geom.M, n = PROJ_W * PROJ_H;
+        for (let i = 0; i < n; i++) {
+          if (!M[i]) continue;
+          let sx = (U[i] * sw) | 0; if (sx >= sw) sx = sw - 1;
+          let sy = (V[i] * sh) | 0; if (sy >= sh) sy = sh - 1;
+          const si = (sy * sw + sx) * 4;
+          if (sd[si + 3] === 0) continue; // ocean -> keep dark
+          const oi = i * 4;
+          od[oi] = sd[si]; od[oi + 1] = sd[si + 1];
+          od[oi + 2] = sd[si + 2]; od[oi + 3] = 255;
+        }
+        pctx.putImageData(out, 0, 0);
+      }
+
+      pctx.lineWidth = 0.6; pctx.strokeStyle = "rgba(232,237,242,0.08)";
+      pctx.beginPath(); path(d3.geoGraticule10()); pctx.stroke();
+      pctx.lineWidth = 0.6; pctx.strokeStyle = "rgba(232,237,242,0.16)";
+      pctx.beginPath(); for (const f of FEATURES.state) path(f); pctx.stroke();
+      pctx.lineWidth = 0.9; pctx.strokeStyle = "rgba(232,237,242,0.45)";
+      pctx.beginPath(); for (const f of FEATURES.country) path(f); pctx.stroke();
+      pctx.lineWidth = 1; pctx.strokeStyle = "rgba(232,237,242,0.22)";
+      pctx.beginPath(); path({ type: "Sphere" }); pctx.stroke();
+    }
+
+    let rafPending = false;
+    function scheduleRender() {
+      if (projName === "globe") return;
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => { rafPending = false; renderProjection(); });
+    }
+
+    function setProjection(name) {
+      projName = name;
       const globeEl = document.getElementById("globe");
       const flatEl = document.getElementById("flat");
-      if (mode === "flat") {
-        world.controls().autoRotate = false;
-        globeEl.style.display = "none";
-        flatEl.style.display = "flex";
-        renderFlat();
-      } else {
+      if (name === "globe") {
         flatEl.style.display = "none";
         globeEl.style.display = "block";
         world.controls().autoRotate = true;
+      } else {
+        world.controls().autoRotate = false;
+        globeEl.style.display = "none";
+        flatEl.style.display = "flex";
+        renderProjection();
       }
-      document.querySelectorAll("#viewctl .seg").forEach((b) =>
-        b.classList.toggle("active", b.dataset.view === mode)
-      );
     }
-    document.querySelectorAll("#viewctl .seg").forEach((b) =>
-      b.addEventListener("click", () => setView(b.dataset.view))
+    document.getElementById("projSelect").addEventListener("change", (e) =>
+      setProjection(e.target.value)
     );
 
     setLoopTemp(T_DEFAULT);
