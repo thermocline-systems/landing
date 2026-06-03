@@ -261,9 +261,6 @@
     <button class="pseg active" data-view="globe" title="Globe" aria-label="Globe">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/></svg>
     </button>
-    <button class="pseg" data-view="equirect" title="Flat (equirectangular)" aria-label="Flat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 12h18M9.5 6v12M15 6v12"/></svg>
-    </button>
     <button class="pseg" data-view="mercator" title="Mercator" aria-label="Mercator">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5.5" y="4" width="13" height="16" rx="1.5"/><path d="M5.5 12h13M12 4v16"/></svg>
     </button>
@@ -709,7 +706,7 @@
     }
 
     function setProjection(name) {
-      if (name === "globe" && !globeOK) name = "equirect"; // no WebGL -> flat
+      if (name === "globe" && !globeOK) name = "robinson"; // no WebGL -> flat map
       projName = name;
       const globeEl = document.getElementById("globe");
       const flatEl = document.getElementById("flat");
