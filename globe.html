@@ -95,12 +95,13 @@
     }
     .loading.hidden { opacity: 0; pointer-events: none; }
 
-    /* icon toggles: layer (Heat/Freeze) + projection picker */
+    /* control pills: heat/freeze blend slider + projection picker */
     .controls,
     .projctl {
       top: clamp(24px, 5vw, 48px);
       right: clamp(24px, 5vw, 48px);
       display: flex;
+      align-items: center;
       gap: 3px;
       padding: 4px;
       border-radius: 999px;
@@ -109,12 +110,39 @@
       backdrop-filter: blur(8px);
       pointer-events: auto;
     }
-    /* projection picker sits just under the layer toggle */
+    /* the blend pill holds icons + a slider, so a little side padding */
+    .controls { gap: 9px; padding: 5px 13px; }
+    /* projection picker sits just under the blend pill */
     .projctl {
       top: calc(clamp(24px, 5vw, 48px) + 50px);
     }
 
-    .controls .seg,
+    .ctl-ic { display: flex; color: var(--muted); }
+    .ctl-ic svg { width: 16px; height: 16px; display: block; }
+
+    #blendSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 96px;
+      height: 5px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+      /* heat (warm) -> freeze (purple) */
+      background: linear-gradient(90deg, #f59e0b, #ef4444, #7c3aed);
+    }
+    #blendSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--fg); border: 2px solid #0e0f10;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+    #blendSlider::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--fg); border: 2px solid #0e0f10;
+    }
+
     .projctl .pseg {
       appearance: none;
       border: 0;
@@ -130,12 +158,25 @@
       border-radius: 999px;
       transition: color 0.2s ease, background 0.2s ease;
     }
-    .controls .seg svg,
     .projctl .pseg svg { width: 18px; height: 18px; display: block; }
-    .controls .seg:hover,
     .projctl .pseg:hover { color: var(--fg); }
-    .controls .seg.active,
     .projctl .pseg.active { color: #0e0f10; background: var(--fg); }
+
+    /* subtle current-projection name above the map */
+    .projname {
+      top: clamp(22px, 4.5vh, 42px);
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
 
     /* flat / projected map view */
     .flatview {
@@ -248,13 +289,17 @@
     © <span id="year">2026</span> Thermocline
   </div>
 
+  <div class="overlay projname" id="projName"></div>
+
   <div class="overlay controls" id="controls">
-    <button class="seg active" data-layer="heat" title="Heat — adiabatic-assist demand" aria-label="Heat">
+    <span class="ctl-ic" title="Heat — adiabatic-assist demand" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
-    </button>
-    <button class="seg" data-layer="freeze" title="Freeze — anti-freeze mode" aria-label="Freeze">
+    </span>
+    <input id="blendSlider" type="range" min="0" max="1" step="0.02" value="0"
+           title="Blend heat ⟷ freeze" aria-label="Blend heat and freeze" />
+    <span class="ctl-ic" title="Freeze — anti-freeze mode" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M3.3 7l17.4 10M20.7 7L3.3 17"/><path d="M9.6 3.6 12 5l2.4-1.4M9.6 20.4 12 19l2.4 1.4M3.5 9.7 4.8 12l-1.3 2.3M20.5 9.7 19.2 12l1.3 2.3" stroke-width="1.3"/></svg>
-    </button>
+    </span>
   </div>
 
   <div class="overlay projctl" id="projctl">
@@ -497,53 +542,31 @@
     }
 
     const PEAK = 0.92;
-    let active = null;
 
-    // lightweight opacity crossfade
-    const fades = {};
-    function fadeTo(key, target) {
-      cancelAnimationFrame(fades[key]);
-      const m = meshes[key].material;
-      const start = m.opacity;
-      const t0 = performance.now();
-      const dur = 450;
-      const step = (now) => {
-        const p = Math.min(1, (now - t0) / dur);
-        m.opacity = start + (target - start) * p;
-        if (p < 1) fades[key] = requestAnimationFrame(step);
-      };
-      fades[key] = requestAnimationFrame(step);
-    }
-
-    function setLayer(key) {
-      if (key === active) return;
-      active = key;
-      Object.keys(meshes).forEach((k) => fadeTo(k, k === key ? PEAK : 0));
-
-      const cfg = OVERLAYS[key];
+    // blend: 0 = full heat, 1 = full freeze, in between = a mix of both layers
+    let blend = 0;
+    function setBlend(t) {
+      blend = t;
+      if (globeOK && meshes.heat && meshes.freeze) {
+        meshes.heat.material.opacity = (1 - t) * PEAK;
+        meshes.freeze.material.opacity = t * PEAK;
+      }
+      // legend follows the dominant layer
+      const cfg = t < 0.5 ? OVERLAYS.heat : OVERLAYS.freeze;
       document.getElementById("legendBar").style.background =
         "linear-gradient(90deg, " + cfg.stops.join(", ") + ")";
       document.getElementById("legendLo").textContent = cfg.lo;
       document.getElementById("legendHi").textContent = cfg.hi;
       document.getElementById("legendLabel").textContent = cfg.label;
-
-      document.querySelectorAll("#controls .seg").forEach((b) =>
-        b.classList.toggle("active", b.dataset.layer === key)
-      );
-
-      // the loop-temp slider only applies to the heat layer
-      document.getElementById("tempctl").style.display =
-        key === "heat" ? "flex" : "none";
+      // loop-temp slider only matters while heat still contributes
+      document.getElementById("tempctl").style.display = t < 1 ? "flex" : "none";
+      scheduleRender();
     }
 
-    document.querySelectorAll("#controls .seg").forEach((b) =>
-      b.addEventListener("click", () => {
-        setLayer(b.dataset.layer);
-        scheduleRender(); // keep projected view in sync when switching layers
-      })
-    );
-
-    setLayer("heat");
+    const blendSlider = document.getElementById("blendSlider");
+    blendSlider.addEventListener("input", () => setBlend(+blendSlider.value));
+    // setBlend(0) is called once below, after `projName` exists (it calls
+    // scheduleRender, which reads projName).
 
     // ---- loop-temperature slider --------------------------------------
     // Preload every frame (40..60 C) up front and pre-upload to the GPU so
@@ -608,12 +631,12 @@
       return p;
     }
 
-    // current heat/freeze frame -> ImageData (cached) for raster resampling
+    // heat-frame / freeze image -> ImageData (cached) for raster resampling
     const srcCache = {};
-    function currentSourceImageData() {
-      const key = active === "freeze" ? "freeze" : `loop_${loopTemp}`;
+    function sourceImageData(which) {
+      const key = which === "freeze" ? "freeze" : `loop_${loopTemp}`;
       if (srcCache[key]) return srcCache[key];
-      const img = active === "freeze"
+      const img = which === "freeze"
         ? freezeImage
         : (heatFrames[loopTemp] && heatFrames[loopTemp].image);
       if (!img || !img.complete || !(img.naturalWidth || img.width)) return null;
@@ -669,20 +692,39 @@
       pctx.beginPath(); path({ type: "Sphere" });
       pctx.fillStyle = "#0b0c0d"; pctx.fill();
 
-      const src = currentSourceImageData();
-      if (src) {
+      // blend heat + freeze layers by `blend` (0 = heat, 1 = freeze), sampling
+      // each source at its own resolution and compositing over the dark disc.
+      const heatSrc = blend < 1 ? sourceImageData("heat") : null;
+      const freezeSrc = blend > 0 ? sourceImageData("freeze") : null;
+      if (heatSrc || freezeSrc) {
         const out = pctx.getImageData(0, 0, PROJ_W, PROJ_H);
-        const od = out.data, sd = src.data, sw = src.width, sh = src.height;
+        const od = out.data;
         const U = geom.U, V = geom.V, M = geom.M, n = PROJ_W * PROJ_H;
+        const hd = heatSrc && heatSrc.data, hw = heatSrc && heatSrc.width, hh = heatSrc && heatSrc.height;
+        const fd = freezeSrc && freezeSrc.data, fw = freezeSrc && freezeSrc.width, fh = freezeSrc && freezeSrc.height;
         for (let i = 0; i < n; i++) {
           if (!M[i]) continue;
-          let sx = (U[i] * sw) | 0; if (sx >= sw) sx = sw - 1;
-          let sy = (V[i] * sh) | 0; if (sy >= sh) sy = sh - 1;
-          const si = (sy * sw + sx) * 4;
-          if (sd[si + 3] === 0) continue; // ocean -> keep dark
-          const oi = i * 4;
-          od[oi] = sd[si]; od[oi + 1] = sd[si + 1];
-          od[oi + 2] = sd[si + 2]; od[oi + 3] = 255;
+          let r = 0, g = 0, b = 0, wsum = 0;
+          if (heatSrc) {
+            let sx = (U[i] * hw) | 0; if (sx >= hw) sx = hw - 1;
+            let sy = (V[i] * hh) | 0; if (sy >= hh) sy = hh - 1;
+            const si = (sy * hw + sx) * 4;
+            const w = (hd[si + 3] / 255) * (1 - blend);
+            if (w > 0) { r += hd[si] * w; g += hd[si + 1] * w; b += hd[si + 2] * w; wsum += w; }
+          }
+          if (freezeSrc) {
+            let sx = (U[i] * fw) | 0; if (sx >= fw) sx = fw - 1;
+            let sy = (V[i] * fh) | 0; if (sy >= fh) sy = fh - 1;
+            const si = (sy * fw + sx) * 4;
+            const w = (fd[si + 3] / 255) * blend;
+            if (w > 0) { r += fd[si] * w; g += fd[si + 1] * w; b += fd[si + 2] * w; wsum += w; }
+          }
+          if (wsum <= 0) continue; // ocean / no data -> keep dark
+          const a = wsum > 1 ? 1 : wsum, inv = 1 - a, oi = i * 4;
+          od[oi] = (r / wsum) * a + od[oi] * inv;
+          od[oi + 1] = (g / wsum) * a + od[oi + 1] * inv;
+          od[oi + 2] = (b / wsum) * a + od[oi + 2] * inv;
+          od[oi + 3] = 255;
         }
         pctx.putImageData(out, 0, 0);
       }
@@ -705,6 +747,18 @@
       requestAnimationFrame(() => { rafPending = false; renderProjection(); });
     }
 
+    const PROJ_NAMES = {
+      globe: "Globe",
+      mercator: "Mercator",
+      robinson: "Robinson",
+      august: "August",
+      vandergrinten: "Van der Grinten",
+    };
+    const projNameEl = document.getElementById("projName");
+    function showProjName(name) {
+      projNameEl.textContent = PROJ_NAMES[name] || "";
+    }
+
     function setProjection(name) {
       if (name === "globe" && !globeOK) name = "robinson"; // no WebGL -> flat map
       projName = name;
@@ -723,11 +777,16 @@
       document.querySelectorAll("#projctl .pseg").forEach((b) =>
         b.classList.toggle("active", b.dataset.view === name)
       );
+      showProjName(name);
     }
-    document.querySelectorAll("#projctl .pseg").forEach((b) =>
-      b.addEventListener("click", () => setProjection(b.dataset.view))
-    );
+    document.querySelectorAll("#projctl .pseg").forEach((b) => {
+      b.addEventListener("click", () => setProjection(b.dataset.view));
+      // hover previews the projection name above the map; revert on leave
+      b.addEventListener("mouseenter", () => showProjName(b.dataset.view));
+      b.addEventListener("mouseleave", () => showProjName(projName));
+    });
 
+    setBlend(0); // initial layer mix (full heat) + legend
     setLoopTemp(T_DEFAULT);
 
     // If the 3D globe is unavailable (no WebGL), hide the Globe button and
@@ -738,6 +797,7 @@
       if (gb) gb.style.display = "none";
       setProjection("robinson");
     }
+    showProjName(projName); // initial label (Globe by default)
 
     // the globe no longer blocks the page — clear the loader regardless
     document.getElementById("loading").classList.add("hidden");
