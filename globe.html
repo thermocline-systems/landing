@@ -95,8 +95,9 @@
     }
     .loading.hidden { opacity: 0; pointer-events: none; }
 
-    /* layer toggle */
-    .controls {
+    /* segmented toggles (layer + view) */
+    .controls,
+    .viewctl {
       top: clamp(24px, 5vw, 48px);
       right: clamp(24px, 5vw, 48px);
       display: flex;
@@ -108,8 +109,13 @@
       backdrop-filter: blur(8px);
       pointer-events: auto;
     }
+    /* view toggle sits just under the layer toggle */
+    .viewctl {
+      top: calc(clamp(24px, 5vw, 48px) + 50px);
+    }
 
-    .controls .seg {
+    .controls .seg,
+    .viewctl .seg {
       appearance: none;
       border: 0;
       cursor: pointer;
@@ -122,8 +128,41 @@
       border-radius: 999px;
       transition: color 0.2s ease, background 0.2s ease;
     }
-    .controls .seg:hover { color: var(--fg); }
-    .controls .seg.active { color: #0e0f10; background: var(--fg); }
+    .controls .seg:hover,
+    .viewctl .seg:hover { color: var(--fg); }
+    .controls .seg.active,
+    .viewctl .seg.active { color: #0e0f10; background: var(--fg); }
+
+    /* flat (equirectangular) map view */
+    .flatview {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 9vh 4vw;
+    }
+    .flat-inner {
+      position: relative;
+      width: min(94vw, calc((100vh - 18vh) * 2));
+      aspect-ratio: 2 / 1;
+      background: #0b0c0d;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.55);
+    }
+    .flat-inner img,
+    .flat-inner svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #flatBorders path { fill: none; vector-effect: non-scaling-stroke; }
+    #flatBorders .b-country { stroke: rgba(232, 237, 242, 0.45); stroke-width: 0.8px; }
+    #flatBorders .b-state { stroke: rgba(232, 237, 242, 0.16); stroke-width: 0.6px; }
 
     /* legend */
     .legend {
@@ -223,6 +262,18 @@
     <button class="seg" data-layer="freeze">Freeze</button>
   </div>
 
+  <div class="overlay viewctl" id="viewctl">
+    <button class="seg active" data-view="globe">Globe</button>
+    <button class="seg" data-view="flat">Flat</button>
+  </div>
+
+  <div class="flatview" id="flat">
+    <div class="flat-inner">
+      <img id="flatImg" alt="World heat-rejection map" />
+      <svg id="flatBorders" viewBox="0 0 360 180" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
   <div class="overlay legend" id="legend">
     <div class="legend-bar" id="legendBar"></div>
     <div class="legend-ends"><span id="legendLo"></span><span id="legendHi"></span></div>
@@ -289,6 +340,51 @@
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
 
+    // --- flat (equirectangular) border SVG --------------------------------
+    // lon/lat -> plate-carrée: x = lon+180 (0..360), y = 90-lat (0..180).
+    // Break the path on antimeridian jumps so wrapping rings don't draw a
+    // stray line across the map.
+    function featurePath(f) {
+      const g = f.geometry;
+      if (!g) return "";
+      const polys =
+        g.type === "Polygon" ? [g.coordinates]
+        : g.type === "MultiPolygon" ? g.coordinates
+        : [];
+      let d = "";
+      for (const poly of polys) {
+        for (const ring of poly) {
+          let started = false, prevLon = null;
+          for (const pt of ring) {
+            const lon = pt[0], lat = pt[1];
+            const x = (lon + 180).toFixed(2), y = (90 - lat).toFixed(2);
+            if (!started || (prevLon !== null && Math.abs(lon - prevLon) > 180)) {
+              d += `M${x} ${y} `;
+              started = true;
+            } else {
+              d += `L${x} ${y} `;
+            }
+            prevLon = lon;
+          }
+        }
+      }
+      return d;
+    }
+    function buildFlatBorders(countryFeatures, stateFeatures) {
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.getElementById("flatBorders");
+      const add = (feats, cls) => {
+        let d = "";
+        for (const f of feats) d += featurePath(f);
+        const p = document.createElementNS(ns, "path");
+        p.setAttribute("d", d);
+        p.setAttribute("class", cls);
+        svg.appendChild(p);
+      };
+      add(stateFeatures, "b-state");
+      add(countryFeatures, "b-country");
+    }
+
     // Country + US-state borders, drawn as thin strokes ON TOP of the heatmap.
     Promise.all([
       fetch(COUNTRIES_URL).then((r) => r.json()),
@@ -301,6 +397,9 @@
         const stateFeatures = (states.features || []).map(
           (f) => ((f._kind = "state"), f)
         );
+
+        // build the flat-map borders from the same data (equirectangular)
+        buildFlatBorders(countryFeatures, stateFeatures);
 
         // Configure zero transition + all accessors BEFORE setting the data,
         // so the borders appear instantly in their final position — no enter
@@ -472,7 +571,10 @@
     }
 
     document.querySelectorAll("#controls .seg").forEach((b) =>
-      b.addEventListener("click", () => setLayer(b.dataset.layer))
+      b.addEventListener("click", () => {
+        setLayer(b.dataset.layer);
+        renderFlat(); // keep flat view in sync when switching layers
+      })
     );
 
     setLayer("heat");
@@ -494,7 +596,9 @@
       heatFrames[T] = tex;
     }
 
+    let loopTemp = T_DEFAULT;
     function setLoopTemp(T) {
+      loopTemp = T;
       const tex = heatFrames[T];
       if (tex && meshes.heat) {
         meshes.heat.material.map = tex;
@@ -502,10 +606,48 @@
       }
       document.getElementById("tempVal").textContent = T;
       document.getElementById("tempDry").textContent = (T - 2.5).toFixed(1);
+      renderFlat(); // keep the flat map in sync
     }
 
     const slider = document.getElementById("tempSlider");
     slider.addEventListener("input", () => setLoopTemp(+slider.value));
+
+    // ---- Globe / Flat view toggle -------------------------------------
+    // The flat view is the same equirectangular texture (the PNG already IS a
+    // flat map) with the border SVG over it — so Heat/Freeze + the slider drive
+    // both views identically.
+    let viewMode = "globe";
+    function flatSrc() {
+      return active === "freeze"
+        ? OVERLAYS.freeze.url
+        : `overlay/heat_frames/loop_${loopTemp}.png`;
+    }
+    function renderFlat() {
+      if (viewMode !== "flat") return;
+      document.getElementById("flatImg").src = flatSrc();
+    }
+    function setView(mode) {
+      viewMode = mode;
+      const globeEl = document.getElementById("globe");
+      const flatEl = document.getElementById("flat");
+      if (mode === "flat") {
+        world.controls().autoRotate = false;
+        globeEl.style.display = "none";
+        flatEl.style.display = "flex";
+        renderFlat();
+      } else {
+        flatEl.style.display = "none";
+        globeEl.style.display = "block";
+        world.controls().autoRotate = true;
+      }
+      document.querySelectorAll("#viewctl .seg").forEach((b) =>
+        b.classList.toggle("active", b.dataset.view === mode)
+      );
+    }
+    document.querySelectorAll("#viewctl .seg").forEach((b) =>
+      b.addEventListener("click", () => setView(b.dataset.view))
+    );
+
     setLoopTemp(T_DEFAULT);
 
     // always-current copyright year
