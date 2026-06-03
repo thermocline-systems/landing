@@ -227,36 +227,13 @@
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
 
-    Promise.all([
-      fetch(COUNTRIES_URL).then((r) => r.json()),
-      fetch(US_STATES_URL).then((r) => r.json()).catch(() => ({ features: [] })),
-    ])
-      .then(([countries, states]) => {
-        const countryFeatures = countries.features
-          .filter((f) => f.properties.ISO_A2 !== "AQ")
-          .map((f) => ((f._kind = "country"), f));
-        const stateFeatures = (states.features || []).map(
-          (f) => ((f._kind = "state"), f)
-        );
-        const features = [...countryFeatures, ...stateFeatures];
-
-        world
-          .polygonsData(features)
-          .polygonCapColor(() => "rgba(0,0,0,0)")
-          .polygonSideColor(() => "rgba(0,0,0,0)")
-          // borders hidden for now — heatmap overlay carries the geography.
-          // restore by returning the gradient color instead of transparent:
-          // const c = bandColor(centroidLat(f));
-          // return f._kind === "state" ? dim(c, 0.4) : c;
-          .polygonStrokeColor(() => "rgba(0,0,0,0)")
-          .polygonAltitude((f) => (f._kind === "state" ? 0.005 : 0.006))
-          .polygonsTransitionDuration(0);
-        document.getElementById("loading").classList.add("hidden");
-      })
-      .catch(() => {
-        document.getElementById("loading").textContent =
-          "Couldn't load map data (needs network).";
-      });
+    // Borders are hidden for now — the heatmap overlay carries the geography.
+    // To restore them, fetch COUNTRIES_URL / US_STATES_URL and feed
+    // world.polygonsData(features) with polygonStrokeColor using bandColor()
+    // (the helpers above are kept for that). The extruded polygon geometry was
+    // occluding the overlay, so we skip the layer entirely rather than just
+    // making the strokes transparent.
+    document.getElementById("loading").classList.add("hidden");
 
     // responsive sizing
     function size() {
