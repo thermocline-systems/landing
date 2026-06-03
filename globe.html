@@ -29,6 +29,7 @@
       position: fixed;
       inset: -20%;
       background:
+        radial-gradient(38% 38% at 50% 50%, rgba(79, 195, 227, 0.14), transparent 62%),
         radial-gradient(40% 50% at 22% 28%, rgba(240, 90, 40, 0.12), transparent 70%),
         radial-gradient(45% 55% at 78% 72%, rgba(45, 175, 230, 0.12), transparent 70%);
       filter: blur(50px);
@@ -79,6 +80,13 @@
       font-size: 14px;
       max-width: 38ch;
       line-height: 1.5;
+    }
+
+    .caption .copyright {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(139, 144, 151, 0.7);
     }
 
     .loading {
@@ -164,6 +172,7 @@
   </div>
   <div class="overlay caption">
     Heat rejection, everywhere it runs hot.
+    <span class="copyright">© <span id="year">2026</span> Thermocline</span>
   </div>
 
   <div class="overlay controls" id="controls">
@@ -175,7 +184,6 @@
     <div class="legend-bar" id="legendBar"></div>
     <div class="legend-ends"><span id="legendLo"></span><span id="legendHi"></span></div>
     <div class="legend-label" id="legendLabel"></div>
-    <div class="legend-sub" id="legendSub"></div>
   </div>
 
   <div class="loading" id="loading">Loading globe…</div>
@@ -191,9 +199,10 @@
     const world = Globe()(document.getElementById("globe"))
       .backgroundColor("rgba(0,0,0,0)")
       .showGlobe(true)
-      .showAtmosphere(true)
-      .atmosphereColor("#4fc3e3")
-      .atmosphereAltitude(0.18)
+      // WebGL atmosphere disabled: its back-side fresnel shader punched dark
+      // triangular "rays" through the transparent ocean of the overlay at some
+      // angles. The CSS halo behind #globe provides the limb glow instead.
+      .showAtmosphere(false)
       .globeMaterial(
         new THREE.MeshPhongMaterial({ color: 0x16171a, transparent: true, opacity: 0.92 })
       );
@@ -336,7 +345,6 @@
       document.getElementById("legendLo").textContent = cfg.lo;
       document.getElementById("legendHi").textContent = cfg.hi;
       document.getElementById("legendLabel").textContent = cfg.label;
-      document.getElementById("legendSub").textContent = cfg.sub;
 
       document.querySelectorAll("#controls .seg").forEach((b) =>
         b.classList.toggle("active", b.dataset.layer === key)
@@ -348,6 +356,9 @@
     );
 
     setLayer("heat");
+
+    // always-current copyright year
+    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
