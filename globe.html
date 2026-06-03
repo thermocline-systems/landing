@@ -308,22 +308,28 @@
     const US_STATES_URL =
       "https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json";
 
-    const world = Globe()(document.getElementById("globe"))
-      .backgroundColor("rgba(0,0,0,0)")
-      .showGlobe(true)
-      // WebGL atmosphere disabled: its back-side fresnel shader punched dark
-      // triangular "rays" through the transparent ocean of the overlay at some
-      // angles. The CSS halo behind #globe provides the limb glow instead.
-      .showAtmosphere(false)
-      .globeMaterial(
-        // opaque so the far side never shows through
-        new THREE.MeshPhongMaterial({ color: 0x16171a })
-      );
-
-    // gentle auto-rotation
-    world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.55;
-    world.controls().enableDamping = true;
+    // The 3D globe is an enhancement: if WebGL is unavailable it must not break
+    // the page — the flat projections (canvas + d3) work without it.
+    let world = null, globeOK = false;
+    try {
+      world = Globe()(document.getElementById("globe"))
+        .backgroundColor("rgba(0,0,0,0)")
+        .showGlobe(true)
+        // atmosphere off: its back-side shader punched dark "rays" through the
+        // overlay's transparent oceans; the CSS halo gives the limb glow.
+        .showAtmosphere(false)
+        .globeMaterial(
+          // opaque so the far side never shows through
+          new THREE.MeshPhongMaterial({ color: 0x16171a })
+        );
+      // gentle auto-rotation
+      world.controls().autoRotate = true;
+      world.controls().autoRotateSpeed = 0.55;
+      world.controls().enableDamping = true;
+      globeOK = true;
+    } catch (e) {
+      console.warn("3D globe unavailable (WebGL); using flat projections.", e);
+    }
 
     // color borders along the brand gradient by latitude band
     const gradStops = ["#ef4b2b", "#f1903a", "#f1b13a", "#aed24a", "#7bd44a", "#4fc3e3", "#2db4e6"];
@@ -368,54 +374,50 @@
         // share the border features with the projected (flat) views
         FEATURES.country = countryFeatures;
         FEATURES.state = stateFeatures;
-        scheduleRender(); // in case a flat projection is already selected
+        scheduleRender(); // refresh the flat view now that borders exist
 
-        // Configure zero transition + all accessors BEFORE setting the data,
-        // so the borders appear instantly in their final position — no enter
-        // animation / altitude "grow-in" shift while rendering.
-        world
-          .polygonsTransitionDuration(0)
-          .polygonCapColor(() => "rgba(0,0,0,0)")
-          .polygonSideColor(() => "rgba(0,0,0,0)")
-          .polygonStrokeColor((f) =>
-            f._kind === "state"
-              ? "rgba(232, 237, 242, 0.14)"
-              : "rgba(232, 237, 242, 0.4)"
-          )
-          .polygonAltitude(() => 0.006)
-          .polygonsData([...countryFeatures, ...stateFeatures]);
+        if (globeOK) {
+          // Zero transition + accessors BEFORE the data so the borders appear
+          // instantly in their final position (no enter / grow-in animation).
+          world
+            .polygonsTransitionDuration(0)
+            .polygonCapColor(() => "rgba(0,0,0,0)")
+            .polygonSideColor(() => "rgba(0,0,0,0)")
+            .polygonStrokeColor((f) =>
+              f._kind === "state"
+                ? "rgba(232, 237, 242, 0.14)"
+                : "rgba(232, 237, 242, 0.4)"
+            )
+            .polygonAltitude(() => 0.006)
+            .polygonsData([...countryFeatures, ...stateFeatures]);
 
-        // Lift the strokes above the heatmap (renderOrder) as soon as globe.gl
-        // creates them, keeping depthTest on so the opaque globe occludes the
-        // far-side lines. Runs each frame briefly so it catches them on the
-        // very first frame they exist (no visible pop).
-        let frames = 0;
-        const liftBorders = () => {
-          world.scene().traverse((o) => {
-            if ((o.isLine || o.isLineSegments) && o.material) {
-              o.renderOrder = 6;
-              o.material.depthTest = true;
-              o.material.transparent = true;
-            }
-          });
-          if (++frames < 90) requestAnimationFrame(liftBorders);
-        };
-        requestAnimationFrame(liftBorders);
-
-        document.getElementById("loading").classList.add("hidden");
+          // Lift the strokes above the heatmap (renderOrder) as globe.gl creates
+          // them; depthTest stays on so the opaque globe hides far-side lines.
+          let frames = 0;
+          const liftBorders = () => {
+            world.scene().traverse((o) => {
+              if ((o.isLine || o.isLineSegments) && o.material) {
+                o.renderOrder = 6;
+                o.material.depthTest = true;
+                o.material.transparent = true;
+              }
+            });
+            if (++frames < 90) requestAnimationFrame(liftBorders);
+          };
+          requestAnimationFrame(liftBorders);
+        }
       })
-      .catch(() => {
-        document.getElementById("loading").textContent =
-          "Couldn't load border data (needs network).";
-      });
+      .catch((e) => console.warn("Border data failed to load.", e));
 
-    // responsive sizing
+    // responsive sizing (globe only)
     function size() {
-      world.width(window.innerWidth).height(window.innerHeight);
+      if (globeOK) world.width(window.innerWidth).height(window.innerHeight);
     }
     window.addEventListener("resize", size);
-    size();
-    world.pointOfView({ lat: 25, lng: 10, altitude: 2.4 });
+    if (globeOK) {
+      size();
+      world.pointOfView({ lat: 25, lng: 10, altitude: 2.4 });
+    }
 
     // ---- climate overlays (equirectangular textures painted on the sphere) ----
     const OVERLAYS = {
@@ -437,67 +439,64 @@
       },
     };
 
-    // Find the base globe mesh, then attach overlays to its PARENT GROUP.
-    // The country borders live in that group's frame, but the base mesh itself
-    // carries a -90° spin the borders don't — so we attach to the group (not the
-    // mesh) and re-apply a +90° rotation so the texture's longitude lines up.
-    let baseGlobe = null;
-    world.scene().traverse((o) => {
-      if (
-        o.isMesh &&
-        o.geometry &&
-        o.geometry.type === "SphereGeometry" &&
-        o.geometry.parameters.radius === 100 &&
-        o.material.type === "MeshPhongMaterial"
-      ) {
-        baseGlobe = o;
-      }
-    });
-    const globeGroup = (baseGlobe && baseGlobe.parent) || world.scene();
+    const meshes = {}; // globe overlay spheres (empty when WebGL is unavailable)
+    if (globeOK) {
+      // Find the base globe mesh, then attach overlays to its PARENT GROUP. The
+      // borders live in that group's frame, but the base mesh carries a -90° spin
+      // they don't — so attach to the group and re-apply +90° to line up.
+      let baseGlobe = null;
+      world.scene().traverse((o) => {
+        if (
+          o.isMesh &&
+          o.geometry &&
+          o.geometry.type === "SphereGeometry" &&
+          o.geometry.parameters.radius === 100 &&
+          o.material.type === "MeshPhongMaterial"
+        ) {
+          baseGlobe = o;
+        }
+      });
+      const globeGroup = (baseGlobe && baseGlobe.parent) || world.scene();
 
-    // ---- OVERLAY ALIGNMENT ----------------------------------------------
-    // The climate textures are equirectangular, so lining them up with the
-    // borders is purely a spin about the globe's polar axis. If the heatmap
-    // drifts east/west of the coastlines, nudge OVERLAY_LON_DEG by a degree
-    // or two until they match. Flip/lat knobs are here for completeness.
-    const OVERLAY_LON_DEG = -90;  // longitude spin (deg); main alignment knob
-    const OVERLAY_LAT_DEG = 0;    // tiny tilt if poles look off (usually 0)
-    const OVERLAY_FLIP_X = false; // true if the map looks mirrored east/west
-    // ---------------------------------------------------------------------
+      // OVERLAY ALIGNMENT — equirectangular textures only need a longitude spin
+      // to line up with the borders. Nudge OVERLAY_LON_DEG if the heatmap drifts.
+      const OVERLAY_LON_DEG = -90;
+      const OVERLAY_LAT_DEG = 0;
+      const OVERLAY_FLIP_X = false;
 
-    const loader = new THREE.TextureLoader();
-    const meshes = {};
-    let bump = 0.4;
-    Object.entries(OVERLAYS).forEach(([key, cfg]) => {
-      const tex = loader.load(cfg.url);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = world.renderer().capabilities.getMaxAnisotropy();
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(100 + bump, 128, 128),
-        new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          depthTest: false, // front-face sphere just above the globe; no z-fight
-          depthWrite: false,
-          side: THREE.FrontSide, // only the near hemisphere draws
-          opacity: 0,
-        })
-      );
-      bump += 0.1;
-      mesh.renderOrder = 3;
-      // alignment (see OVERLAY_* knobs above)
-      mesh.rotation.set(
-        (OVERLAY_LAT_DEG * Math.PI) / 180,
-        (OVERLAY_LON_DEG * Math.PI) / 180,
-        0
-      );
-      if (OVERLAY_FLIP_X) {
-        mesh.scale.x = -1;
-        mesh.material.side = THREE.BackSide; // keep winding correct when mirrored
-      }
-      globeGroup.add(mesh);
-      meshes[key] = mesh;
-    });
+      const loader = new THREE.TextureLoader();
+      const maxAniso = world.renderer().capabilities.getMaxAnisotropy();
+      let bump = 0.4;
+      Object.entries(OVERLAYS).forEach(([key, cfg]) => {
+        const tex = loader.load(cfg.url);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = maxAniso;
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(100 + bump, 128, 128),
+          new THREE.MeshBasicMaterial({
+            map: tex,
+            transparent: true,
+            depthTest: false,
+            depthWrite: false,
+            side: THREE.FrontSide,
+            opacity: 0,
+          })
+        );
+        bump += 0.1;
+        mesh.renderOrder = 3;
+        mesh.rotation.set(
+          (OVERLAY_LAT_DEG * Math.PI) / 180,
+          (OVERLAY_LON_DEG * Math.PI) / 180,
+          0
+        );
+        if (OVERLAY_FLIP_X) {
+          mesh.scale.x = -1;
+          mesh.material.side = THREE.BackSide;
+        }
+        globeGroup.add(mesh);
+        meshes[key] = mesh;
+      });
+    }
 
     const PEAK = 0.92;
     let active = null;
@@ -554,16 +553,24 @@
     const T_MIN = 40, T_MAX = 60, T_DEFAULT = 45;
     const heatFrames = {};
     const fLoader = new THREE.TextureLoader();
-    const maxAniso = world.renderer().capabilities.getMaxAnisotropy();
+    const frameAniso = globeOK ? world.renderer().capabilities.getMaxAnisotropy() : 1;
     for (let T = T_MIN; T <= T_MAX; T++) {
       const tex = fLoader.load(
         `overlay/heat_frames/loop_${T}.png`,
-        (t) => { try { world.renderer().initTexture(t); } catch (e) {} }
+        (t) => {
+          if (globeOK) { try { world.renderer().initTexture(t); } catch (e) {} }
+          scheduleRender(); // refresh the flat view once this frame decodes
+        }
       );
       tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = maxAniso;
+      tex.anisotropy = frameAniso;
       heatFrames[T] = tex;
     }
+
+    // freeze source image for the flat views (independent of the globe mesh)
+    const freezeImage = new Image();
+    freezeImage.onload = () => scheduleRender();
+    freezeImage.src = OVERLAYS.freeze.url;
 
     let loopTemp = T_DEFAULT;
     function setLoopTemp(T) {
@@ -608,8 +615,9 @@
     function currentSourceImageData() {
       const key = active === "freeze" ? "freeze" : `loop_${loopTemp}`;
       if (srcCache[key]) return srcCache[key];
-      const tex = active === "freeze" ? meshes.freeze.material.map : heatFrames[loopTemp];
-      const img = tex && tex.image;
+      const img = active === "freeze"
+        ? freezeImage
+        : (heatFrames[loopTemp] && heatFrames[loopTemp].image);
       if (!img || !img.complete || !(img.naturalWidth || img.width)) return null;
       const c = document.createElement("canvas");
       c.width = img.naturalWidth || img.width;
@@ -700,15 +708,16 @@
     }
 
     function setProjection(name) {
+      if (name === "globe" && !globeOK) name = "equirect"; // no WebGL -> flat
       projName = name;
       const globeEl = document.getElementById("globe");
       const flatEl = document.getElementById("flat");
       if (name === "globe") {
         flatEl.style.display = "none";
         globeEl.style.display = "block";
-        world.controls().autoRotate = true;
+        if (globeOK) world.controls().autoRotate = true;
       } else {
-        world.controls().autoRotate = false;
+        if (globeOK) world.controls().autoRotate = false;
         globeEl.style.display = "none";
         flatEl.style.display = "flex";
         renderProjection();
@@ -719,6 +728,20 @@
     );
 
     setLoopTemp(T_DEFAULT);
+
+    // If the 3D globe is unavailable (no WebGL), drop the Globe option and
+    // default to a flat projection so the page still works.
+    if (!globeOK) {
+      document.getElementById("globe").style.display = "none";
+      const sel = document.getElementById("projSelect");
+      const g = sel.querySelector('option[value="globe"]');
+      if (g) g.remove();
+      sel.value = "robinson";
+      setProjection("robinson");
+    }
+
+    // the globe no longer blocks the page — clear the loader regardless
+    document.getElementById("loading").classList.add("hidden");
 
     // always-current copyright year
     document.getElementById("year").textContent = new Date().getFullYear();
