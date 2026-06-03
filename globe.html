@@ -196,7 +196,8 @@
       // angles. The CSS halo behind #globe provides the limb glow instead.
       .showAtmosphere(false)
       .globeMaterial(
-        new THREE.MeshPhongMaterial({ color: 0x16171a, transparent: true, opacity: 0.92 })
+        // opaque so the far side never shows through
+        new THREE.MeshPhongMaterial({ color: 0x16171a })
       );
 
     // gentle auto-rotation
@@ -253,14 +254,15 @@
           .polygonAltitude(() => 0.006)
           .polygonsTransitionDuration(0);
 
-        // The heatmap overlay uses depthTest:false and would otherwise paint
-        // over the strokes. Lift the border lines above it (higher renderOrder,
-        // no depth test) so they sit on top of the colored fill.
+        // Lift the strokes above the heatmap via renderOrder (so they sit on
+        // the colored fill), but KEEP depthTest on so the now-opaque globe
+        // occludes the far-side borders — the globe reads as solid, and the
+        // back-hemisphere lines don't show through / swim as it rotates.
         const liftBorders = () => {
           world.scene().traverse((o) => {
             if ((o.isLine || o.isLineSegments) && o.material) {
               o.renderOrder = 6;
-              o.material.depthTest = false;
+              o.material.depthTest = true;
               o.material.transparent = true;
             }
           });
