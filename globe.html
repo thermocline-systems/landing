@@ -322,6 +322,16 @@
     });
     const globeGroup = (baseGlobe && baseGlobe.parent) || world.scene();
 
+    // ---- OVERLAY ALIGNMENT ----------------------------------------------
+    // The climate textures are equirectangular, so lining them up with the
+    // borders is purely a spin about the globe's polar axis. If the heatmap
+    // drifts east/west of the coastlines, nudge OVERLAY_LON_DEG by a degree
+    // or two until they match. Flip/lat knobs are here for completeness.
+    const OVERLAY_LON_DEG = -90;  // longitude spin (deg); main alignment knob
+    const OVERLAY_LAT_DEG = 0;    // tiny tilt if poles look off (usually 0)
+    const OVERLAY_FLIP_X = false; // true if the map looks mirrored east/west
+    // ---------------------------------------------------------------------
+
     const loader = new THREE.TextureLoader();
     const meshes = {};
     let bump = 0.4;
@@ -342,7 +352,16 @@
       );
       bump += 0.1;
       mesh.renderOrder = 3;
-      mesh.rotation.y = Math.PI / 2; // align texture longitude with the borders
+      // alignment (see OVERLAY_* knobs above)
+      mesh.rotation.set(
+        (OVERLAY_LAT_DEG * Math.PI) / 180,
+        (OVERLAY_LON_DEG * Math.PI) / 180,
+        0
+      );
+      if (OVERLAY_FLIP_X) {
+        mesh.scale.x = -1;
+        mesh.material.side = THREE.BackSide; // keep winding correct when mirrored
+      }
       globeGroup.add(mesh);
       meshes[key] = mesh;
     });
