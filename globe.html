@@ -228,13 +228,53 @@
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
 
-    // Borders are hidden for now — the heatmap overlay carries the geography.
-    // To restore them, fetch COUNTRIES_URL / US_STATES_URL and feed
-    // world.polygonsData(features) with polygonStrokeColor using bandColor()
-    // (the helpers above are kept for that). The extruded polygon geometry was
-    // occluding the overlay, so we skip the layer entirely rather than just
-    // making the strokes transparent.
-    document.getElementById("loading").classList.add("hidden");
+    // Country + US-state borders, drawn as thin strokes ON TOP of the heatmap.
+    Promise.all([
+      fetch(COUNTRIES_URL).then((r) => r.json()),
+      fetch(US_STATES_URL).then((r) => r.json()).catch(() => ({ features: [] })),
+    ])
+      .then(([countries, states]) => {
+        const countryFeatures = (countries.features || [])
+          .filter((f) => f.properties.ISO_A2 !== "AQ")
+          .map((f) => ((f._kind = "country"), f));
+        const stateFeatures = (states.features || []).map(
+          (f) => ((f._kind = "state"), f)
+        );
+
+        world
+          .polygonsData([...countryFeatures, ...stateFeatures])
+          .polygonCapColor(() => "rgba(0,0,0,0)")
+          .polygonSideColor(() => "rgba(0,0,0,0)")
+          .polygonStrokeColor((f) =>
+            f._kind === "state"
+              ? "rgba(232, 237, 242, 0.14)"
+              : "rgba(232, 237, 242, 0.4)"
+          )
+          .polygonAltitude(() => 0.006)
+          .polygonsTransitionDuration(0);
+
+        // The heatmap overlay uses depthTest:false and would otherwise paint
+        // over the strokes. Lift the border lines above it (higher renderOrder,
+        // no depth test) so they sit on top of the colored fill.
+        const liftBorders = () => {
+          world.scene().traverse((o) => {
+            if ((o.isLine || o.isLineSegments) && o.material) {
+              o.renderOrder = 6;
+              o.material.depthTest = false;
+              o.material.transparent = true;
+            }
+          });
+        };
+        liftBorders();
+        setTimeout(liftBorders, 120);
+        setTimeout(liftBorders, 600);
+
+        document.getElementById("loading").classList.add("hidden");
+      })
+      .catch(() => {
+        document.getElementById("loading").textContent =
+          "Couldn't load border data (needs network).";
+      });
 
     // responsive sizing
     function size() {
