@@ -214,23 +214,21 @@
       white-space: nowrap;
     }
 
-    /* flat / projected map view */
+    /* flat / projected map view — full-screen, like the globe */
     .flatview {
       position: fixed;
       inset: 0;
       z-index: 1;
       display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 8vh 4vw 12vh;
     }
     #projCanvas {
-      max-width: 94vw;
-      max-height: 80vh;
-      width: auto;
-      height: auto;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
       cursor: grab;
-      touch-action: none; /* let us handle drag/zoom gestures */
+      touch-action: none; /* we handle drag/zoom gestures */
     }
 
     /* legend */
@@ -496,11 +494,14 @@
       })
       .catch((e) => console.warn("Border data failed to load.", e));
 
-    // responsive sizing (globe only)
+    // responsive sizing
     function size() {
       if (globeOK) world.width(window.innerWidth).height(window.innerHeight);
     }
-    window.addEventListener("resize", size);
+    window.addEventListener("resize", () => {
+      size();
+      if (projName !== "globe") { sizeFlat(); renderProjection(); }
+    });
     if (globeOK) {
       size();
       world.pointOfView({ lat: 25, lng: 10, altitude: 2.4 });
@@ -694,9 +695,7 @@
     // Heat/Freeze toggle and the loop-temp slider drive every projection.
     const projCanvas = document.getElementById("projCanvas");
     const pctx = projCanvas.getContext("2d");
-    const PROJ_W = 880, PROJ_H = 540;
-    projCanvas.width = PROJ_W;
-    projCanvas.height = PROJ_H;
+    let PROJ_W = 880, PROJ_H = 540; // resized to the viewport by sizeFlat()
     let projName = "globe";
 
     // pan/zoom transform for the flat views: screen = base*k + (x,y)
@@ -707,6 +706,22 @@
       view.y = Math.min(0, Math.max(-(view.k - 1) * PROJ_H, view.y));
     }
 
+    // Size the projection canvas to the viewport (full-screen, like the globe),
+    // capped for performance and CSS-stretched to fill. Invalidates the geometry
+    // cache (the inverse map is resolution-dependent) and resets the view.
+    function sizeFlat() {
+      const CAP = 1000;
+      const vw = window.innerWidth || document.documentElement.clientWidth || 1280;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+      const aspect = vw / vh;
+      if (aspect >= 1) { PROJ_W = Math.min(vw, CAP) | 0; PROJ_H = (PROJ_W / aspect) | 0; }
+      else { PROJ_H = Math.min(vh, CAP) | 0; PROJ_W = (PROJ_H * aspect) | 0; }
+      projCanvas.width = PROJ_W;
+      projCanvas.height = PROJ_H;
+      for (const key in geomCache) delete geomCache[key];
+      view.k = 1; view.x = 0; view.y = 0;
+    }
+
     function makeProjection(name) {
       let p;
       if (name === "mercator") p = d3.geoMercator();
@@ -714,7 +729,8 @@
       else if (name === "august") p = d3.geoAugust();
       else if (name === "vandergrinten") p = d3.geoVanDerGrinten();
       else p = d3.geoEquirectangular();
-      p.fitExtent([[12, 12], [PROJ_W - 12, PROJ_H - 12]], { type: "Sphere" });
+      const pad = Math.round(Math.min(PROJ_W, PROJ_H) * 0.05);
+      p.fitExtent([[pad, pad], [PROJ_W - pad, PROJ_H - pad]], { type: "Sphere" });
       return p;
     }
 
@@ -921,8 +937,8 @@
       } else {
         if (globeOK) world.controls().autoRotate = false;
         globeEl.style.display = "none";
-        flatEl.style.display = "flex";
-        view.k = 1; view.x = 0; view.y = 0; // start each projection un-zoomed
+        flatEl.style.display = "block";
+        sizeFlat(); // fit to the current viewport + reset the view
         renderProjection();
       }
       document.querySelectorAll("#projctl .pseg").forEach((b) =>
