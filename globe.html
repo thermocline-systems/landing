@@ -229,6 +229,8 @@
       max-height: 80vh;
       width: auto;
       height: auto;
+      cursor: grab;
+      touch-action: none; /* let us handle drag/zoom gestures */
     }
 
     /* legend */
@@ -697,6 +699,14 @@
     projCanvas.height = PROJ_H;
     let projName = "globe";
 
+    // pan/zoom transform for the flat views: screen = base*k + (x,y)
+    const view = { k: 1, x: 0, y: 0 };
+    function clampView() {
+      view.k = Math.max(1, Math.min(8, view.k));
+      view.x = Math.min(0, Math.max(-(view.k - 1) * PROJ_W, view.x));
+      view.y = Math.min(0, Math.max(-(view.k - 1) * PROJ_H, view.y));
+    }
+
     function makeProjection(name) {
       let p;
       if (name === "mercator") p = d3.geoMercator();
@@ -754,7 +764,7 @@
           M[i] = 1;
         }
       }
-      const g = { proj, U, V, M };
+      const g = { proj, U, V, M, baseScale: proj.scale(), baseTranslate: proj.translate() };
       geomCache[name] = g;
       return g;
     }
@@ -762,6 +772,13 @@
     function renderProjection() {
       if (projName === "globe" || typeof d3 === "undefined") return;
       const geom = projGeometry(projName);
+      // apply pan/zoom (view) to the projection so vectors draw crisply...
+      geom.proj
+        .scale(geom.baseScale * view.k)
+        .translate([
+          geom.baseTranslate[0] * view.k + view.x,
+          geom.baseTranslate[1] * view.k + view.y,
+        ]);
       const path = d3.geoPath(geom.proj, pctx);
       pctx.clearRect(0, 0, PROJ_W, PROJ_H);
 
@@ -769,39 +786,46 @@
       pctx.beginPath(); path({ type: "Sphere" });
       pctx.fillStyle = "#0b0c0d"; pctx.fill();
 
-      // blend heat + freeze layers by `blend` (0 = heat, 1 = freeze), sampling
-      // each source at its own resolution and compositing over the dark disc.
+      // ...and reuse the cached base inverse map by mapping each screen pixel
+      // back through the same view transform — no per-frame re-projection.
       const heatSrc = blend < 1 ? sourceImageData("heat") : null;
       const freezeSrc = blend > 0 ? sourceImageData("freeze") : null;
       if (heatSrc || freezeSrc) {
         const out = pctx.getImageData(0, 0, PROJ_W, PROJ_H);
         const od = out.data;
-        const U = geom.U, V = geom.V, M = geom.M, n = PROJ_W * PROJ_H;
+        const U = geom.U, V = geom.V, M = geom.M;
         const hd = heatSrc && heatSrc.data, hw = heatSrc && heatSrc.width, hh = heatSrc && heatSrc.height;
         const fd = freezeSrc && freezeSrc.data, fw = freezeSrc && freezeSrc.width, fh = freezeSrc && freezeSrc.height;
-        for (let i = 0; i < n; i++) {
-          if (!M[i]) continue;
-          let r = 0, g = 0, b = 0, wsum = 0;
-          if (heatSrc) {
-            let sx = (U[i] * hw) | 0; if (sx >= hw) sx = hw - 1;
-            let sy = (V[i] * hh) | 0; if (sy >= hh) sy = hh - 1;
-            const si = (sy * hw + sx) * 4;
-            const w = (hd[si + 3] / 255) * (1 - blend);
-            if (w > 0) { r += hd[si] * w; g += hd[si + 1] * w; b += hd[si + 2] * w; wsum += w; }
+        const k = view.k, vx = view.x, vy = view.y;
+        for (let y = 0; y < PROJ_H; y++) {
+          for (let x = 0; x < PROJ_W; x++) {
+            const bx = (x - vx) / k, by = (y - vy) / k;
+            if (bx < 0 || bx >= PROJ_W || by < 0 || by >= PROJ_H) continue;
+            const bi = (by | 0) * PROJ_W + (bx | 0);
+            if (!M[bi]) continue;
+            const u = U[bi], v = V[bi];
+            let r = 0, g = 0, b = 0, wsum = 0;
+            if (heatSrc) {
+              let sx = (u * hw) | 0; if (sx >= hw) sx = hw - 1;
+              let sy = (v * hh) | 0; if (sy >= hh) sy = hh - 1;
+              const si = (sy * hw + sx) * 4;
+              const w = (hd[si + 3] / 255) * (1 - blend);
+              if (w > 0) { r += hd[si] * w; g += hd[si + 1] * w; b += hd[si + 2] * w; wsum += w; }
+            }
+            if (freezeSrc) {
+              let sx = (u * fw) | 0; if (sx >= fw) sx = fw - 1;
+              let sy = (v * fh) | 0; if (sy >= fh) sy = fh - 1;
+              const si = (sy * fw + sx) * 4;
+              const w = (fd[si + 3] / 255) * blend;
+              if (w > 0) { r += fd[si] * w; g += fd[si + 1] * w; b += fd[si + 2] * w; wsum += w; }
+            }
+            if (wsum <= 0) continue; // ocean / no data -> keep dark
+            const a = wsum > 1 ? 1 : wsum, inv = 1 - a, oi = (y * PROJ_W + x) * 4;
+            od[oi] = (r / wsum) * a + od[oi] * inv;
+            od[oi + 1] = (g / wsum) * a + od[oi + 1] * inv;
+            od[oi + 2] = (b / wsum) * a + od[oi + 2] * inv;
+            od[oi + 3] = 255;
           }
-          if (freezeSrc) {
-            let sx = (U[i] * fw) | 0; if (sx >= fw) sx = fw - 1;
-            let sy = (V[i] * fh) | 0; if (sy >= fh) sy = fh - 1;
-            const si = (sy * fw + sx) * 4;
-            const w = (fd[si + 3] / 255) * blend;
-            if (w > 0) { r += fd[si] * w; g += fd[si + 1] * w; b += fd[si + 2] * w; wsum += w; }
-          }
-          if (wsum <= 0) continue; // ocean / no data -> keep dark
-          const a = wsum > 1 ? 1 : wsum, inv = 1 - a, oi = i * 4;
-          od[oi] = (r / wsum) * a + od[oi] * inv;
-          od[oi + 1] = (g / wsum) * a + od[oi + 1] * inv;
-          od[oi + 2] = (b / wsum) * a + od[oi + 2] * inv;
-          od[oi + 3] = 255;
         }
         pctx.putImageData(out, 0, 0);
       }
@@ -823,6 +847,55 @@
       rafPending = true;
       requestAnimationFrame(() => { rafPending = false; renderProjection(); });
     }
+
+    // ---- pan / zoom on the flat (projected) views ----------------------
+    function canvasPoint(e) {
+      const rect = projCanvas.getBoundingClientRect();
+      return [
+        (e.clientX - rect.left) * (PROJ_W / rect.width),
+        (e.clientY - rect.top) * (PROJ_H / rect.height),
+      ];
+    }
+    projCanvas.addEventListener("wheel", (e) => {
+      if (projName === "globe") return;
+      e.preventDefault();
+      const [cx, cy] = canvasPoint(e);
+      const factor = Math.exp(-e.deltaY * 0.0015);
+      const newK = Math.max(1, Math.min(8, view.k * factor));
+      // keep the point under the cursor fixed while zooming
+      view.x = cx - ((cx - view.x) / view.k) * newK;
+      view.y = cy - ((cy - view.y) / view.k) * newK;
+      view.k = newK;
+      clampView();
+      scheduleRender();
+    }, { passive: false });
+
+    let dragging = false, lastX = 0, lastY = 0;
+    projCanvas.addEventListener("pointerdown", (e) => {
+      if (projName === "globe") return;
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      projCanvas.setPointerCapture(e.pointerId);
+      projCanvas.style.cursor = "grabbing";
+    });
+    projCanvas.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const rect = projCanvas.getBoundingClientRect();
+      view.x += (e.clientX - lastX) * (PROJ_W / rect.width);
+      view.y += (e.clientY - lastY) * (PROJ_H / rect.height);
+      lastX = e.clientX; lastY = e.clientY;
+      clampView();
+      scheduleRender();
+    });
+    const endDrag = () => { dragging = false; projCanvas.style.cursor = "grab"; };
+    projCanvas.addEventListener("pointerup", endDrag);
+    projCanvas.addEventListener("pointercancel", endDrag);
+    // double-click resets the view
+    projCanvas.addEventListener("dblclick", (e) => {
+      if (projName === "globe") return;
+      e.preventDefault();
+      view.k = 1; view.x = 0; view.y = 0;
+      scheduleRender();
+    });
 
     const PROJ_NAMES = {
       globe: "Globe",
@@ -849,6 +922,7 @@
         if (globeOK) world.controls().autoRotate = false;
         globeEl.style.display = "none";
         flatEl.style.display = "flex";
+        view.k = 1; view.x = 0; view.y = 0; // start each projection un-zoomed
         renderProjection();
       }
       document.querySelectorAll("#projctl .pseg").forEach((b) =>
