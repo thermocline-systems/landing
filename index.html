@@ -145,7 +145,8 @@
   .cta:hover{background:var(--ink);color:#fff}
 
   footer{border-top:1px solid var(--ink)}
-  .foot-in{max-width:var(--maxw);margin:0 auto;padding:24px 32px 60px;display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .foot-in{max-width:var(--maxw);margin:0 auto;padding:24px 32px 60px;display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .foot-brand{display:flex;flex-direction:column;gap:7px}
 
   .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
@@ -180,9 +181,9 @@
 
 <header class="hero" id="top">
   <div class="wrap">
-    <p class="ey reveal">Cooling Plant Engineering</p>
+    <p class="ey reveal">Critical Cooling Infrastructure</p>
     <h1 class="reveal">We engineer the world's <b>best data center cooling.</b></h1>
-    <p class="lede reveal">Technology-agnostic and engineered for your site. We design and prove the optimal cooling plant, then build the <b>custom hardware and software that runs it all as one system</b>.</p>
+    <p class="lede reveal">Technology-agnostic and engineered for your site. We design and prove the optimal cooling plant, then build the <b>custom hardware and software that runs it</b>.</p>
     <p class="scale reveal">High-density GPU compute · Liquid-to-chip · 100–250 kW+ racks · Warm-water loops · Edge to gigawatt</p>
     <div class="stats reveal">
       <div class="stat"><div class="v">600+ MW</div><div class="l">Designed, deployed &amp; operating across the globe</div></div>
@@ -210,7 +211,7 @@
       <span class="chip">Heat reuse</span>
       <span class="chip">Water use</span>
     </div>
-    <p class="closer reveal">Cooling plants aren't cookie-cutter. <b>We design the cooling plants of the future</b>, engineered to meet every need a site actually has.</p>
+    <p class="closer reveal">Cooling plants aren't cookie-cutter. <b>We engineer each one to the site it serves.</b></p>
   </div>
 </section>
 
@@ -218,7 +219,7 @@
   <div class="wrap">
     <span class="label reveal">Every site has a right answer</span>
     <h2 class="reveal">The best plant depends on where you build <b>and how.</b></h2>
-    <p class="sub reveal">Climate, water, grid, and operating strategy make every site different. We evaluate every viable approach against your site's physics and economics, and recommend only what genuinely wins.</p>
+    <p class="sub reveal">Climate, water, grid, and operating strategy make every site different. We evaluate every viable approach against your site's physics and economics, and recommend only what wins.</p>
     <div class="pairs reveal">
       <div class="pair"><span class="site">Desert · scarce water</span><span class="arr">&rarr;</span><span class="ans"><b>Dry-primary + adiabatic assist.</b> Full performance through extreme ambient</span></div>
       <div class="pair"><span class="site">Coastal · cold water</span><span class="arr">&rarr;</span><span class="ans"><b>Seawater cooling.</b> Deep cold water as the primary sink</span></div>
@@ -250,9 +251,9 @@
     <span class="label reveal">What we do</span>
     <div class="steps">
       <div class="step reveal"><div class="n">01</div><div class="t">Assess</div><div class="d">Study the site, climate, water, grid, compute, and operating requirements.</div></div>
-      <div class="step reveal"><div class="n">02</div><div class="t">Propose</div><div class="d">The genuinely best approach, evaluated across every cooling technology.</div></div>
+      <div class="step reveal"><div class="n">02</div><div class="t">Propose</div><div class="d">The best approach for the site, evaluated across every cooling technology.</div></div>
       <div class="step reveal"><div class="n">03</div><div class="t">Prove</div><div class="d">Full thermal modeling, analysis, and validation before anything is built.</div></div>
-      <div class="step reveal"><div class="n">04</div><div class="t">Deliver</div><div class="d">Engineer the plant and supply it through best-in-class vendors and a global manufacturing network.</div></div>
+      <div class="step reveal"><div class="n">04</div><div class="t">Deliver</div><div class="d">Engineer the plant and supply it through proven vendors and a global manufacturing network.</div></div>
       <div class="step reveal"><div class="n">05</div><div class="t">Run</div><div class="d">Custom hardware and control software that make the whole plant behave as one optimized system.</div></div>
     </div>
   </div>
@@ -279,14 +280,14 @@
   <div class="wrap">
     <span class="label reveal">The connective tissue</span>
     <h2 class="reveal">We make a plant of many vendors <b>run as one.</b></h2>
-    <p class="sub reveal">We have deep relationships with the vendors and factories that matter, and the in-house ability to custom-design and build the hardware, controls, and software that connect everything into a single, optimized plant. We get it built.</p>
+    <p class="sub reveal">We have deep relationships with the vendors and factories that matter, and the in-house ability to custom-design and build the hardware, controls, and software that make every component work together. We get it built.</p>
     <div class="grid reveal">
       <div class="cell"><h3>Thermal modeling</h3><p>Site-specific performance modeling across the full ambient range, proven before it ships.</p></div>
-      <div class="cell"><h3>Custom hardware</h3><p>Bespoke manifolds, valving, and hydraulics that tie disparate equipment into one coherent system.</p></div>
-      <div class="cell"><h3>Controls &amp; software</h3><p>In-house PCBs, electrical design, and control software, built to operate the plant as a single system.</p></div>
+      <div class="cell"><h3>Custom hardware</h3><p>Bespoke manifolds, valving, and hydraulics that tie disparate equipment together cleanly.</p></div>
+      <div class="cell"><h3>Controls &amp; software</h3><p>In-house PCBs, electrical design, and control software, built to run the whole plant from one place.</p></div>
       <div class="cell"><h3>Testing &amp; validation</h3><p>IT thermal testing, component testing, proof-of-concept pilots, and pre-deployment validation.</p></div>
-      <div class="cell"><h3>Vendor &amp; factory network</h3><p>Deep connections across equipment vendors and the world's best manufacturing facilities.</p></div>
-      <div class="cell"><h3>Operations support</h3><p>Commissioning, monitoring, and optimization, from a team that runs its own plants at five nines.</p></div>
+      <div class="cell"><h3>Vendor &amp; factory network</h3><p>Direct relationships across equipment vendors and leading manufacturing facilities worldwide.</p></div>
+      <div class="cell"><h3>Operations support</h3><p>Commissioning, monitoring, and optimization, from a team that runs its own plants at four nines.</p></div>
     </div>
   </div>
 </section>
@@ -295,7 +296,7 @@
   <div class="wrap">
     <span class="label reveal">Monitoring &amp; control</span>
     <h2 class="reveal">We build the operating system <b>your site needs.</b></h2>
-    <p class="sub reveal">We design, build, and manage the custom hardware, firmware, and software that monitor and control the plant: predictive control, fail-safes, efficiency targets, and curtailment strategies, all tied into every vendor component on site. The operating logic your site actually requires, running everything as one system.</p>
+    <p class="sub reveal">We design, build, and manage the custom hardware, firmware, and software that monitor and control the plant: predictive control, fail-safes, efficiency targets, and curtailment strategies, all tied into every vendor component on site. The control logic your site calls for, running everything as one system.</p>
     <div class="os reveal">
       <div class="os-top">
         <span class="os-name">Thermocline OS</span>
@@ -303,7 +304,7 @@
       </div>
       <div class="os-tie">Ties into every vendor component</div>
       <div class="os-row">
-        <span>Chillers</span><span>Dry coolers</span><span>Pumps</span><span>CDUs</span><span>Valves</span><span>Sensors</span>
+        <span>Chillers</span><span>Dry coolers</span><span>CRAC / CRAH</span><span>Pumps</span><span>CDUs</span><span>Valves</span><span>Sensors</span>
       </div>
     </div>
   </div>
@@ -326,7 +327,7 @@
 <section>
   <div class="wrap">
     <span class="label reveal">How we fit</span>
-    <p class="fit-note reveal">We're the cooling specialist in the middle, partnering with MEP firms for stamps and integration, and with best-in-class equipment vendors for supply. Not a competitor to either. The team everyone wants in the room.</p>
+    <p class="fit-note reveal">We're the cooling specialist in the middle, partnering with MEP firms for stamps and integration, and with equipment vendors for supply. Not a competitor to either. The team everyone wants in the room.</p>
     <div class="triad reveal">
       <div class="node"><span class="nk">Operators</span><span class="role">Site · capital · demand</span></div>
       <div class="node"><span class="nk">MEP Firms</span><span class="role">Stamps · integration</span></div>
@@ -349,7 +350,11 @@
 
 <footer>
   <div class="foot-in">
-    <span class="mark-grad" style="font-weight:600">Thermocline</span>
+    <div class="foot-brand">
+      <span class="mark-grad" style="font-weight:600">Thermocline</span>
+      <span>Critical cooling infrastructure</span>
+    </div>
+    <span>🇺🇸 San Francisco · 🇩🇰 Copenhagen</span>
     <span>Edge to gigawatt</span>
   </div>
 </footer>
