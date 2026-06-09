@@ -510,7 +510,7 @@
     // ---- climate overlays (equirectangular textures painted on the sphere) ----
     const OVERLAYS = {
       heat: {
-        url: "overlay/heat_frames/loop_45.png",
+        url: "../overlay/heat_frames/loop_45.png",
         label: "Adiabatic-assist demand",
         sub: "Where pure-dry cooling needs a hand.",
         stops: ["#19c3e6", "#38bdf8", "#a3e635", "#facc15", "#f59e0b", "#ef4444"],
@@ -518,7 +518,7 @@
         hi: "Adiabatic",
       },
       freeze: {
-        url: "overlay/freeze_antifreeze_overlay.png",
+        url: "../overlay/freeze_antifreeze_overlay.png",
         label: "Anti-freeze mode",
         sub: "Where glycol runs year-round.",
         stops: ["#1a2433", "#b794f4", "#9b6ef0", "#7c3aed", "#5b21b6", "#3b0a78"],
@@ -657,7 +657,7 @@
     const frameAniso = globeOK ? world.renderer().capabilities.getMaxAnisotropy() : 1;
     for (let T = T_MIN; T <= T_MAX; T++) {
       const tex = fLoader.load(
-        `overlay/heat_frames/loop_${T}.png`,
+        `../overlay/heat_frames/loop_${T}.png`,
         (t) => {
           if (globeOK) { try { world.renderer().initTexture(t); } catch (e) {} }
           scheduleRender(); // refresh the flat view once this frame decodes
