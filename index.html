@@ -51,6 +51,19 @@
   .stat + .stat{padding-left:22px;border-left:1px solid var(--hair)}
   .stat .v{font-size:26px;font-weight:300;letter-spacing:-.01em}
   .stat .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:7px;line-height:1.5}
+  .trust{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:26px}
+
+  /* yield facts */
+  .facts{display:flex;border-top:1px solid var(--ink);max-width:900px;margin-top:44px}
+  .fact{flex:1;padding:18px 20px 0 0}
+  .fact + .fact{padding-left:20px;border-left:1px solid var(--hair)}
+  .fact .v{font-size:19px;font-weight:500;letter-spacing:-.01em}
+  .fact .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px;line-height:1.5}
+
+  .cta-sm{margin-top:46px;padding:13px 26px;font-size:11px}
+  .email-mid{display:inline-block;font-size:15px;font-weight:500;letter-spacing:.02em;color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--ink);padding-bottom:3px;margin-top:46px;user-select:all}
+  .email-big{display:inline-block;font-size:clamp(21px,3.2vw,30px);font-weight:500;letter-spacing:-.01em;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--ink);padding-bottom:6px;user-select:all}
+  .email-cap{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:18px}
 
   section{padding:88px 0;border-top:1px solid var(--hair)}
   h2{font-weight:300;font-size:clamp(26px,3.8vw,40px);line-height:1.1;letter-spacing:-.02em;max-width:24ch;margin-bottom:18px}
@@ -169,12 +182,13 @@
   <div class="wrap">
     <p class="ey reveal">Cooling Plant Engineering</p>
     <h1 class="reveal">We engineer the world's <b>best data center cooling.</b></h1>
-    <p class="lede reveal">Technology-agnostic and built for your site. We assess your requirements, design and prove the optimal cooling plant, supply it through deep vendor and factory relationships, and build the <b>custom hardware and software that ties it all into one system</b>.</p>
-    <p class="scale reveal">From a few kilowatts at the edge to <b>gigawatt scale</b></p>
+    <p class="lede reveal">Technology-agnostic and engineered for your site. We design and prove the optimal cooling plant, then build the <b>custom hardware and software that runs it all as one system</b>.</p>
+    <p class="scale reveal">High-density GPU compute · Liquid-to-chip · 100–250 kW+ racks · Warm-water loops · Edge to gigawatt</p>
     <div class="stats reveal">
       <div class="stat"><div class="v">600+ MW</div><div class="l">Designed, deployed &amp; operating across the globe</div></div>
       <div class="stat"><div class="v">99.99%</div><div class="l">Uptime, sustained for years</div></div>
     </div>
+    <p class="trust reveal">Operated for sovereign-backed and institutional operators</p>
   </div>
 </header>
 
@@ -206,8 +220,8 @@
     <h2 class="reveal">The best plant depends on where you build <b>and how.</b></h2>
     <p class="sub reveal">Climate, water, grid, and operating strategy make every site different. We evaluate every viable approach against your site's physics and economics, and recommend only what genuinely wins.</p>
     <div class="pairs reveal">
-      <div class="pair"><span class="site">Desert · scarce water</span><span class="arr">&rarr;</span><span class="ans"><b>Dry-primary + adiabatic assist.</b> Chiller-free across extreme ambient</span></div>
-      <div class="pair"><span class="site">Coastal · cold water</span><span class="arr">&rarr;</span><span class="ans"><b>Seawater cooling.</b> Near-zero mechanical refrigeration</span></div>
+      <div class="pair"><span class="site">Desert · scarce water</span><span class="arr">&rarr;</span><span class="ans"><b>Dry-primary + adiabatic assist.</b> Full performance through extreme ambient</span></div>
+      <div class="pair"><span class="site">Coastal · cold water</span><span class="arr">&rarr;</span><span class="ans"><b>Seawater cooling.</b> Deep cold water as the primary sink</span></div>
       <div class="pair"><span class="site">Nordic · district energy</span><span class="arr">&rarr;</span><span class="ans"><b>Free cooling + heat reuse.</b> Waste heat becomes revenue</span></div>
       <div class="pair"><span class="site">Geothermal potential</span><span class="arr">&rarr;</span><span class="ans"><b>Ground-coupled rejection.</b> A stable sink, independent of air</span></div>
       <div class="pair"><span class="site">Dense urban · constrained</span><span class="arr">&rarr;</span><span class="ans"><b>High-efficiency chiller plant.</b> Engineered to minimum overhead</span></div>
@@ -227,6 +241,7 @@
       <div class="to"><span class="a">Redundancy</span><span class="vs">&#8645;</span><span class="b">Cost</span></div>
       <div class="to"><span class="a">Efficiency</span><span class="vs">&#8645;</span><span class="b">Speed to deploy</span></div>
     </div>
+    <a class="email-mid reveal" href="mailto:approach@thermocline.io">approach@thermocline.io</a>
   </div>
 </section>
 
@@ -245,28 +260,17 @@
 
 <section>
   <div class="wrap">
-    <span class="label reveal">Proof</span>
-    <h2 class="reveal">We prove our claims. <b>We don't just make them.</b></h2>
-    <p class="team-body reveal">Performance numbers are easy to assert and hard to trust. So we regularly build the test rigs and climate chambers to verify and validate every claim under real conditions, and we stress-test designs to their limits before they ever reach a site. If we say a plant holds its approach temperature through a desert summer, we've measured it.</p>
-    <div class="tags reveal">
-      <span class="tag">Test rigs</span>
-      <span class="tag">Climate chambers</span>
-      <span class="tag">Stress testing</span>
-      <span class="tag">Performance validation</span>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
     <span class="label reveal">How we work</span>
     <h2 class="reveal">Lean by design. <b>Fast by default.</b></h2>
-    <p class="team-body reveal">First-principles engineering, no-frills execution, and a small team that moves quickly, without sacrificing efficiency or performance. We build differently than the industry norm because that's how a plant actually ships on schedule and works.</p>
+    <p class="team-body reveal" style="margin-bottom:18px">First-principles engineering, no-frills execution, and a small team that moves quickly, without sacrificing efficiency or performance. We build differently than the industry norm because that's how a plant actually ships on schedule and works.</p>
+    <p class="team-body reveal">And we prove our claims rather than just make them. We regularly build test rigs and climate chambers to verify and validate performance under real conditions, and we stress-test designs to their limits before they ever reach a site. If we say a plant holds its approach temperature through a desert summer, we've measured it.</p>
     <div class="tags reveal">
       <span class="tag">First principles</span>
       <span class="tag">No frills</span>
-      <span class="tag">Lean team</span>
       <span class="tag">Aggressive timelines</span>
+      <span class="tag">Test rigs</span>
+      <span class="tag">Climate chambers</span>
+      <span class="tag">Stress testing</span>
     </div>
   </div>
 </section>
@@ -338,7 +342,8 @@
     <span class="label reveal">Start with your site</span>
     <h2 class="reveal">Tell us where you're building. <b>We'll tell you the best way to cool it.</b></h2>
     <p class="reveal">A site assessment is the fastest way to see how we work: climate and requirement analysis, candidate architectures, and a defensible recommendation for your specific build.</p>
-    <a class="cta reveal" href="mailto:thermocline@thermocline.io">Get in touch</a>
+    <a class="email-big reveal" href="mailto:approach@thermocline.io">approach@thermocline.io</a>
+    <p class="email-cap reveal">Every design starts with the approach</p>
   </div>
 </section>
 
