@@ -111,6 +111,18 @@
   .os-item::before{content:"";position:absolute;top:-18px;left:50%;width:1px;height:24px;background:var(--line)}
   .os-sub{font-size:14.5px;color:var(--body-c);max-width:56ch;line-height:1.65;margin-top:20px}
 
+  /* ============ partner / how we fit ============ */
+  .partner-note{font-size:16px;color:var(--body-c);max-width:60ch;line-height:1.65;margin:18px 0 42px;text-wrap:pretty}
+  .partner-note b{color:var(--ink);font-weight:500}
+  .triad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:760px}
+  .node{text-align:center;border:1px solid var(--hair-2);padding:22px 12px}
+  .node .nk{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px}
+  .node .role{font-size:12px;letter-spacing:.04em;color:var(--muted)}
+  .converge{text-align:center;color:var(--faint);font-size:20px;font-weight:300;margin:14px 0;max-width:760px}
+  .hub{text-align:center;background:var(--ink);color:#fff;padding:26px;max-width:760px}
+  .hub b{font-size:16px;font-weight:600;letter-spacing:.02em}
+  .hub div{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-top:6px}
+
   /* ============ contact ============ */
   .contact{padding:110px 0}
   .contact p{font-size:16px;color:var(--body-c);max-width:50ch;line-height:1.65;margin:20px 0 44px}
@@ -157,6 +169,7 @@
     .os-items{flex-wrap:wrap;gap:8px;justify-content:flex-start;margin-top:16px}
     .os-item{flex:0 0 auto;padding:9px 14px;border:1px solid var(--hair-2)}
     .os-stem{display:none}
+    .triad{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -273,6 +286,21 @@
       </div>
       <p class="os-sub">Custom hardware, firmware, and software. Vendor-neutral by design.</p>
     </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="label reveal">How we fit</span>
+    <h2 class="reveal">Not a competitor. <b>The right partner.</b></h2>
+    <p class="partner-note reveal">We're the cooling specialist in the middle, partnering with MEP firms for stamps and integration, and with equipment vendors for supply. The team everyone wants in the room.</p>
+    <div class="triad reveal">
+      <div class="node"><span class="nk">Operators</span><span class="role">Site · capital · demand</span></div>
+      <div class="node"><span class="nk">MEP Firms</span><span class="role">Stamps · integration</span></div>
+      <div class="node"><span class="nk">Vendors</span><span class="role">Equipment supply</span></div>
+    </div>
+    <div class="converge reveal">&darr;</div>
+    <div class="hub reveal"><b>Thermocline</b><div>The cooling specialist</div></div>
   </div>
 </section>
 
