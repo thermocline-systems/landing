@@ -113,19 +113,14 @@
 
   /* ============ partner / how we fit ============ */
   .partner-note{font-size:16px;color:var(--body-c);max-width:52ch;line-height:1.65;margin:16px 0 40px;text-wrap:pretty}
-  .fitgraph{max-width:540px}
+  .fitgraph{max-width:430px}
   .fit-srcs{display:flex;justify-content:space-between;text-align:center}
-  .fit-src{flex:1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink)}
-  .fit-merge{position:relative;height:40px}
-  .fit-merge i{position:absolute;background:var(--line)}
-  .fit-merge .d{top:0;width:1px;height:20px}
-  .fit-merge .d1{left:16.667%}
-  .fit-merge .d2{left:50%}
-  .fit-merge .d3{left:83.333%}
-  .fit-merge .bus{top:20px;left:16.667%;right:16.667%;height:1px}
-  .fit-merge .stem{top:20px;left:50%;width:1px;height:20px}
+  .fit-src{flex:1;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;color:var(--ink)}
+  .fit-svg{display:block;width:100%;height:38px;margin:9px 0 1px;overflow:visible}
+  .fit-svg path{fill:none;stroke:var(--line);stroke-width:1.2px;vector-effect:non-scaling-stroke}
+  .fit-svg circle{fill:var(--ink)}
   .fit-hubwrap{text-align:center}
-  .fit-hub{display:inline-block;background:var(--ink);color:#fff;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:13px 32px}
+  .fit-hub{display:inline-block;background:var(--ink);color:#fff;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:11px 26px}
 
   /* ============ contact ============ */
   .contact{padding:110px 0}
@@ -174,7 +169,7 @@
     .os-item{flex:0 0 auto;padding:9px 14px;border:1px solid var(--hair-2)}
     .os-stem{display:none}
     .fit-srcs{flex-direction:column;gap:8px;text-align:left}
-    .fit-merge{display:none}
+    .fit-svg{display:none}
     .fit-hubwrap{text-align:left;margin-top:16px}
   }
 </style>
@@ -306,7 +301,12 @@
         <span class="fit-src">MEP Firms</span>
         <span class="fit-src">Vendors</span>
       </div>
-      <div class="fit-merge"><i class="d d1"></i><i class="d d2"></i><i class="d d3"></i><i class="bus"></i><i class="stem"></i></div>
+      <svg class="fit-svg" viewBox="0 0 430 38" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M71.7 3 C 71.7 26, 215 14, 215 35" />
+        <path d="M215 3 L 215 35" />
+        <path d="M358.3 3 C 358.3 26, 215 14, 215 35" />
+        <circle cx="215" cy="35" r="2.6" />
+      </svg>
       <div class="fit-hubwrap"><span class="fit-hub">Thermocline</span></div>
     </div>
   </div>
