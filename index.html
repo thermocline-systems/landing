@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thermocline · Critical Cooling Infrastructure</title>
-<meta name="description" content="Thermocline engineers the world's best data center cooling. Technology-agnostic, requirement-driven design, custom hardware and software, and delivery through deep vendor and factory relationships, from a few kilowatts to gigawatt scale.">
+<meta name="description" content="Every site has a best cooling approach. Thermocline designs it, tests it and builds it. Technology-agnostic, requirement-driven, from edge to gigawatt.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -13,8 +13,10 @@
     --ink:#111;
     --body-c:#444;
     --muted:#777;
+    --faint:#999;
     --hair:#e3e3e3;
     --hair-2:#cfcfcf;
+    --line:#c4c4c4;
     --maxw:1040px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -22,10 +24,11 @@
   body{background:#fff;color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.6}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px}
   a{color:inherit}
-  a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  button{font-family:inherit;background:none;border:none;cursor:pointer}
 
   .ey{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#666;font-weight:500}
-  .label{font-size:11.5px;letter-spacing:.28em;text-transform:uppercase;color:#999;font-weight:500;display:block;margin-bottom:28px}
+  .label{font-size:11.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);font-weight:500;display:block;margin-bottom:26px}
 
   /* nav */
   nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
@@ -35,139 +38,125 @@
     background:linear-gradient(90deg,#DE4517 0%,#DD6B12 16%,#CF8F10 30%,#A8901A 44%,#6E991E 57%,#3C9C3A 70%,#229A7C 82%,#1C92BE 92%,#2C7EBE 100%);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
   }
-  .nav-cta{font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;text-decoration:none;border:1.5px solid var(--ink);padding:9px 20px;transition:background .2s,color .2s}
-  .nav-cta:hover{background:var(--ink);color:#fff}
+  .nav-mail{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;text-decoration:none;color:var(--muted);transition:color .2s}
+  .nav-mail:hover{color:var(--ink)}
 
   /* hero */
-  .hero{padding:110px 0 86px}
-  h1{font-weight:300;font-size:clamp(40px,6vw,68px);line-height:1.04;letter-spacing:-.02em;max-width:17ch;margin:34px 0 30px}
+  .hero{padding:118px 0 92px}
+  h1{font-weight:300;font-size:clamp(40px,6vw,68px);line-height:1.04;letter-spacing:-.02em;max-width:20ch;margin:34px 0 28px}
   h1 b{font-weight:600}
-  .lede{font-size:17px;color:var(--body-c);max-width:58ch;line-height:1.65;margin-bottom:16px}
+  .lede{font-size:17px;color:var(--body-c);max-width:54ch;line-height:1.65;margin-bottom:56px;text-wrap:pretty}
   .lede b{color:var(--ink);font-weight:500}
-  .scale{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:58px}
-  .scale b{color:var(--ink);font-weight:600}
-  .stats{display:flex;border-top:1px solid var(--ink);max-width:820px}
+  .stats{display:flex;border-top:1px solid var(--ink);max-width:760px}
   .stat{flex:1;padding:20px 22px 0 0}
   .stat + .stat{padding-left:22px;border-left:1px solid var(--hair)}
   .stat .v{font-size:26px;font-weight:300;letter-spacing:-.01em}
   .stat .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:7px;line-height:1.5}
   .trust{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:26px}
 
-  /* yield facts */
-  .facts{display:flex;border-top:1px solid var(--ink);max-width:900px;margin-top:44px}
-  .fact{flex:1;padding:18px 20px 0 0}
-  .fact + .fact{padding-left:20px;border-left:1px solid var(--hair)}
-  .fact .v{font-size:19px;font-weight:500;letter-spacing:-.01em}
-  .fact .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px;line-height:1.5}
+  section{padding:96px 0;border-top:1px solid var(--hair)}
+  h2{font-weight:300;font-size:clamp(26px,3.8vw,40px);line-height:1.12;letter-spacing:-.02em;max-width:26ch}
+  h2 b{font-weight:600}
 
-  .cta-sm{margin-top:46px;padding:13px 26px;font-size:11px}
-  .email-mid{display:inline-block;font-size:15px;font-weight:500;letter-spacing:.02em;color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--ink);padding-bottom:3px;margin-top:46px;user-select:all}
+  /* ============ schematic ============ */
+  .tabs{display:flex;flex-wrap:wrap;gap:0 34px;margin:36px 0 54px}
+  .tab{padding:10px 2px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;color:var(--faint);border-bottom:1.5px solid transparent;transition:color .25s,border-color .25s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{color:var(--ink);font-weight:600;border-color:var(--ink)}
+
+  .schem{display:flex;align-items:center;max-width:920px}
+  .endp{flex:0 0 auto;width:136px;text-align:center}
+  .endp svg{display:block;margin:0 auto 16px;width:62px;height:62px;stroke:var(--ink);fill:none;stroke-width:1.5;stroke-linecap:square}
+  .endp .nm{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;line-height:1.6}
+  .endp .sb{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+  .conn{flex:1 1 auto;min-width:48px;height:64px;position:relative;align-self:center;margin-bottom:46px}
+  .conn .ln{position:absolute;height:1.5px;background-image:linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 11px);background-size:11px 1.5px;background-repeat:repeat-x}
+  .conn .ln.top{top:22px;left:0;right:9px;animation:flowR 1.6s linear infinite}
+  .conn .ln.bot{bottom:22px;left:9px;right:0;animation:flowL 1.6s linear infinite}
+  .conn .ln.top::after{content:"";position:absolute;right:-9px;top:50%;transform:translateY(-50%);border-left:8px solid var(--ink);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+  .conn .ln.bot::before{content:"";position:absolute;left:-9px;top:50%;transform:translateY(-50%);border-right:8px solid var(--ink);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+  @keyframes flowR{to{background-position:11px 0}}
+  @keyframes flowL{to{background-position:-11px 0}}
+
+  .plant{flex:0 0 auto;width:214px;background:var(--ink);color:#fff;text-align:center;padding:28px 16px;margin-bottom:46px}
+  .plant .pn{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#9a9a9a;font-weight:500}
+  .plant .pt{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;line-height:1.7;margin-top:9px;min-height:38px;display:flex;align-items:center;justify-content:center}
+
+  .sink-w{position:relative}
+  .fade{transition:opacity .28s ease}
+  .fade.out{opacity:0}
+
+  .caption{font-size:15px;color:var(--body-c);margin-top:10px;min-height:52px;max-width:60ch;text-wrap:pretty}
+  .caption b{color:var(--ink);font-weight:500}
+
+  /* ============ process ============ */
+  .proc{display:grid;grid-template-columns:repeat(5,1fr);border-top:1.5px solid var(--ink);max-width:980px;margin-top:44px}
+  .pstep{padding:0 20px 0 0}
+  .pstep::before{content:"";display:block;width:1.5px;height:11px;background:var(--ink);margin-bottom:18px}
+  .pstep .n{font-size:10.5px;letter-spacing:.14em;color:var(--faint);margin-bottom:9px}
+  .pstep .t{font-size:15.5px;font-weight:600}
+  .pstep .d{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.6;max-width:20ch}
+
+  /* ============ OS ============ */
+  .os{max-width:880px;margin-top:46px}
+  .os-bar{background:var(--ink);color:#fff;padding:20px 26px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 18px}
+  .os-name{font-size:15px;font-weight:600;letter-spacing:.04em}
+  .os-fns{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a}
+  .os-stem{width:1.5px;height:26px;background:var(--ink);margin:0 auto}
+  .os-tree{position:relative;padding-top:18px}
+  .os-tree::before{content:"";position:absolute;top:0;left:7%;right:7%;height:1px;background:var(--line)}
+  .os-items{display:flex;justify-content:space-between;gap:8px}
+  .os-item{position:relative;flex:1;padding-top:16px;text-align:center;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--body-c)}
+  .os-item::before{content:"";position:absolute;top:-18px;left:50%;width:1px;height:24px;background:var(--line)}
+  .os-sub{font-size:14.5px;color:var(--body-c);max-width:56ch;line-height:1.65;margin-top:20px}
+
+  /* ============ contact ============ */
+  .contact{padding:110px 0}
+  .contact p{font-size:16px;color:var(--body-c);max-width:50ch;line-height:1.65;margin:20px 0 44px}
   .email-big{display:inline-block;font-size:clamp(21px,3.2vw,30px);font-weight:500;letter-spacing:-.01em;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--ink);padding-bottom:6px;user-select:all}
   .email-cap{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:18px}
 
-  section{padding:88px 0;border-top:1px solid var(--hair)}
-  h2{font-weight:300;font-size:clamp(26px,3.8vw,40px);line-height:1.1;letter-spacing:-.02em;max-width:24ch;margin-bottom:18px}
-  h2 b{font-weight:600}
-  .sub{font-size:16px;color:var(--body-c);max-width:62ch;line-height:1.65;margin-bottom:40px}
-  .sub b{color:var(--ink);font-weight:500}
-
-  /* chips */
-  .chips{display:flex;flex-wrap:wrap;gap:10px}
-  .chip{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--body-c);padding:10px 16px;border:1px solid var(--hair-2)}
-  .closer{font-size:16px;color:var(--body-c);max-width:60ch;line-height:1.65;margin-top:34px}
-  .closer b{color:var(--ink);font-weight:500}
-
-  /* pairings */
-  .pairs{border-bottom:1px solid var(--hair)}
-  .pair{display:grid;grid-template-columns:1fr 44px 1.55fr;gap:18px;align-items:baseline;padding:17px 0;border-top:1px solid var(--hair)}
-  .pair .site{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:500}
-  .pair .arr{text-align:center;color:var(--ink);font-weight:300}
-  .pair .ans{font-size:14.5px;color:var(--body-c)}
-  .pair .ans b{color:var(--ink);font-weight:600}
-  .note{font-size:14.5px;color:var(--body-c);margin-top:28px;max-width:60ch}
-  .note b{color:var(--ink);font-weight:500}
-
-  /* tradeoffs */
-  .tradeoffs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ink);max-width:900px}
-  .to{padding:20px 18px 0 0;font-size:13px;letter-spacing:.06em}
-  .to + .to{padding-left:18px;border-left:1px solid var(--hair)}
-  .to .vs{display:block;font-weight:300;font-size:18px;margin:2px 0;color:var(--muted)}
-  .to span{display:block}
-  .to .a{font-weight:600}
-  .to .b{color:var(--body-c)}
-
-  /* steps */
-  .step{display:grid;grid-template-columns:64px 132px 1fr;gap:22px;align-items:baseline;padding:19px 0;border-top:1px solid var(--hair)}
-  .steps .step:last-child{border-bottom:1px solid var(--hair)}
-  .step .n{font-size:12px;letter-spacing:.1em;color:var(--muted);font-weight:300}
-  .step .t{font-size:16px;font-weight:600}
-  .step .d{font-size:14.5px;color:var(--body-c)}
-
-  /* grid */
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--hair)}
-  .cell{padding:26px 24px;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair)}
-  .cell:nth-child(3n){border-right:none}
-  .cell:nth-child(n+4){border-bottom:none}
-  .cell h3{font-size:15px;font-weight:600;margin-bottom:8px}
-  .cell p{font-size:13.5px;color:var(--body-c);line-height:1.6}
-
-  /* OS */
-  .os{margin-top:10px;max-width:900px}
-  .os-top{background:var(--ink);color:#fff;padding:20px 24px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px}
-  .os-name{font-size:16px;font-weight:600;letter-spacing:.02em}
-  .os-fns{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#bbb}
-  .os-tie{text-align:center;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:14px 0}
-  .os-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-  .os-row span{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--body-c);padding:9px 16px;border:1px solid var(--hair-2)}
-
-  /* team */
-  .team-body{font-size:16px;color:var(--body-c);max-width:64ch;line-height:1.65;margin-bottom:30px}
-  .team-body b{color:var(--ink);font-weight:500}
-  .tags{display:flex;flex-wrap:wrap;gap:10px}
-  .tag{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);padding:10px 16px;border:1px solid var(--ink)}
-
-  /* fit */
-  .fit-note{font-size:16px;color:var(--body-c);max-width:62ch;line-height:1.65;margin-bottom:32px}
-  .triad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;max-width:820px}
-  .node{text-align:center;border:1px solid var(--hair-2);padding:18px 10px}
-  .node .nk{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:5px}
-  .node .role{font-size:12.5px;color:var(--muted)}
-  .converge{font-weight:300;font-size:20px;color:var(--muted);margin:10px 0;text-align:center;max-width:820px}
-  .hub{text-align:center;background:var(--ink);color:#fff;padding:24px;max-width:820px}
-  .hub b{font-size:17px;font-weight:600;letter-spacing:.02em}
-  .hub div{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#aaa;margin-top:6px}
-
-  /* contact */
-  .contact{padding:104px 0}
-  .contact h2{max-width:26ch}
-  .contact p{font-size:16px;color:var(--body-c);max-width:54ch;line-height:1.65;margin-bottom:40px}
-  .cta{display:inline-block;font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);padding:16px 38px;transition:background .2s,color .2s}
-  .cta:hover{background:var(--ink);color:#fff}
-
   footer{border-top:1px solid var(--ink)}
   .foot-in{max-width:var(--maxw);margin:0 auto;padding:24px 32px 60px;display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-  .foot-brand{display:flex;flex-direction:column;gap:7px}
+  .foot-brand{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
 
   .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
-  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+    .conn .ln{animation:none !important}
+  }
 
   @media(max-width:680px){
     .wrap,.nav-in,.foot-in{padding-left:22px;padding-right:22px}
-    .hero{padding:70px 0 60px}
-    section{padding:62px 0}
-    .stats{flex-direction:column;border-top-width:1px}
+    .nav-mail{display:none}
+    .plant,.conn{margin-bottom:40px}
+    .caption{min-height:72px}
+    .hero{padding:72px 0 60px}
+    section{padding:64px 0}
+    .stats{flex-direction:column}
     .stat + .stat{border-left:none;border-top:1px solid var(--hair);padding:16px 0 0;margin-top:16px}
-    .tradeoffs{grid-template-columns:1fr 1fr}
-    .to:nth-child(odd){padding-left:0;border-left:none}
-    .to{padding-bottom:18px}
-    .step{grid-template-columns:44px 1fr;gap:14px}
-    .step .d{grid-column:1 / -1;padding-left:58px}
-    .pair{grid-template-columns:1fr 28px 1.5fr;gap:10px}
-    .grid{grid-template-columns:1fr}
-    .cell{border-right:none !important;border-bottom:1px solid var(--hair) !important}
-    .cell:last-child{border-bottom:none !important}
-    .triad{grid-template-columns:1fr}
+    .tabs{gap:0 22px;margin-bottom:42px}
+    .endp{width:84px}
+    .endp svg{width:44px;height:44px}
+    .endp .nm{font-size:9.5px;letter-spacing:.12em}
+    .endp .sb{font-size:9px}
+    .plant{width:124px;padding:18px 8px}
+    .plant .pn{font-size:8.5px;letter-spacing:.22em}
+    .plant .pt{font-size:9.5px;letter-spacing:.1em;min-height:34px}
+    .conn{min-width:26px}
+    .proc{grid-template-columns:1fr;border-top:none;margin-top:30px}
+    .pstep{border-top:1px solid var(--hair);padding:17px 0;display:grid;grid-template-columns:34px 96px 1fr;gap:6px 10px;align-items:baseline}
+    .pstep::before{display:none}
+    .pstep .n{margin:0}
+    .pstep .d{max-width:none;margin:0}
+    .os-tree::before,.os-item::before{display:none}
+    .os-tree{padding-top:0}
+    .os-items{flex-wrap:wrap;gap:8px;justify-content:flex-start;margin-top:16px}
+    .os-item{flex:0 0 auto;padding:9px 14px;border:1px solid var(--hair-2)}
+    .os-stem{display:none}
   }
 </style>
 </head>
@@ -176,18 +165,19 @@
 <nav>
   <div class="nav-in">
     <a class="wordmark mark-grad" href="#top">Thermocline</a>
+    <a class="nav-mail" href="mailto:approach@thermocline.io">approach@thermocline.io</a>
   </div>
 </nav>
 
 <header class="hero" id="top">
   <div class="wrap">
     <p class="ey reveal">Critical Cooling Infrastructure</p>
-    <h1 class="reveal">Every site has a <b>best cooling plant.</b> We design it, plan it, and build it for you.</h1>
-    <p class="lede reveal">Technology-agnostic and engineered for your site. We design and prove the optimal cooling plant, then build the <b>custom hardware and software that runs it</b>.</p>
-    <p class="scale reveal">High-density GPU compute · Liquid-to-chip · 100–250 kW+ racks · Warm-water loops · Edge to gigawatt</p>
+    <h1 class="reveal">Every site has a <b>best cooling approach.</b> We design it, test it and build it.</h1>
+    <p class="lede reveal">Cooling is a business decision. We engineer the best one for your site.</p>
     <div class="stats reveal">
-      <div class="stat"><div class="v">600+ MW</div><div class="l">Designed, deployed &amp; operating across the globe</div></div>
-      <div class="stat"><div class="v">99.99%</div><div class="l">Uptime, sustained for years</div></div>
+      <div class="stat"><div class="v">600+ MW</div><div class="l">Designed, deployed &amp; operating worldwide</div></div>
+      <div class="stat"><div class="v">Five nines</div><div class="l">Uptime, sustained for years</div></div>
+      <div class="stat"><div class="v">Edge &rarr; GW</div><div class="l">From a few racks to campus scale</div></div>
     </div>
     <p class="trust reveal">Operated for sovereign-backed and institutional operators</p>
   </div>
@@ -195,99 +185,68 @@
 
 <section>
   <div class="wrap">
-    <span class="label reveal">No two plants are the same</span>
-    <h2 class="reveal">A cooling plant is shaped by far more <b>than climate and power.</b></h2>
-    <p class="sub reveal">Uptime, certification, curtailment, efficiency, noise, pollutants, heat reuse. Every requirement pulls the design in a different direction, and they compete. Off-the-shelf plants ignore that. We engineer the one that satisfies all of them at once.</p>
-    <div class="chips reveal">
-      <span class="chip">Uptime &amp; redundancy</span>
-      <span class="chip">Certification</span>
-      <span class="chip">Curtailment strategy</span>
-      <span class="chip">Power &amp; density</span>
-      <span class="chip">Temperature targets</span>
-      <span class="chip">Efficiency / pPUE</span>
-      <span class="chip">Heat-shaving strategy</span>
-      <span class="chip">Airborne pollutants</span>
-      <span class="chip">Noise</span>
-      <span class="chip">Heat reuse</span>
-      <span class="chip">Water use</span>
-    </div>
-    <p class="closer reveal">Cooling plants aren't cookie-cutter. <b>We engineer each one to the site it serves.</b></p>
-  </div>
-</section>
+    <span class="label reveal">Technology-agnostic</span>
+    <h2 class="reveal">Where the heat goes <b>depends on the site.</b></h2>
 
-<section>
-  <div class="wrap">
-    <span class="label reveal">Every site has a right answer</span>
-    <h2 class="reveal">The best plant depends on where you build <b>and how.</b></h2>
-    <p class="sub reveal">Climate, water, grid, and operating strategy make every site different. We evaluate every viable approach against your site's physics and economics, and recommend only what wins.</p>
-    <div class="pairs reveal">
-      <div class="pair"><span class="site">Desert · scarce water</span><span class="arr">&rarr;</span><span class="ans"><b>Dry-primary + adiabatic assist.</b> Full performance through extreme ambient</span></div>
-      <div class="pair"><span class="site">Coastal · cold water</span><span class="arr">&rarr;</span><span class="ans"><b>Seawater cooling.</b> Deep cold water as the primary sink</span></div>
-      <div class="pair"><span class="site">Nordic · district energy</span><span class="arr">&rarr;</span><span class="ans"><b>Free cooling + heat reuse.</b> Waste heat becomes revenue</span></div>
-      <div class="pair"><span class="site">Geothermal potential</span><span class="arr">&rarr;</span><span class="ans"><b>Ground-coupled rejection.</b> A stable sink, independent of air</span></div>
-      <div class="pair"><span class="site">Dense urban · constrained</span><span class="arr">&rarr;</span><span class="ans"><b>High-efficiency chiller plant.</b> Engineered to minimum overhead</span></div>
+    <div class="tabs reveal" role="tablist" aria-label="Site types">
+      <button class="tab" role="tab" aria-selected="true" data-i="0">Desert</button>
+      <button class="tab" role="tab" aria-selected="false" data-i="1">Coastal</button>
+      <button class="tab" role="tab" aria-selected="false" data-i="2">Nordic</button>
+      <button class="tab" role="tab" aria-selected="false" data-i="3">Urban</button>
     </div>
-    <p class="note reveal">We track every vendor and every technology in the market, so the recommendation is built for your site, <b>not for a catalog</b>.</p>
-  </div>
-</section>
 
-<section>
-  <div class="wrap">
-    <span class="label reveal">Tradeoffs in the open</span>
-    <h2 class="reveal">Every cooling choice is <b>a business choice.</b></h2>
-    <p class="sub reveal" style="margin-bottom:44px">We don't just deliver the best design. We translate cooling physics into business terms, so the tradeoffs are yours to weigh, not ours to hide. Every strategy balances capex against opex, water against power, redundancy against cost, efficiency against speed to deploy, and we put those side by side, down to the megawatts returned to compute, so you can see exactly what each choice costs and decide what "best" means for your build.</p>
-    <div class="tradeoffs reveal">
-      <div class="to"><span class="a">Capex</span><span class="vs">&#8645;</span><span class="b">Opex</span></div>
-      <div class="to"><span class="a">Water</span><span class="vs">&#8645;</span><span class="b">Power</span></div>
-      <div class="to"><span class="a">Redundancy</span><span class="vs">&#8645;</span><span class="b">Cost</span></div>
-      <div class="to"><span class="a">Efficiency</span><span class="vs">&#8645;</span><span class="b">Speed to deploy</span></div>
+    <div class="schem reveal" aria-live="polite">
+      <div class="endp">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+          <rect x="10" y="8" width="16" height="40"/>
+          <line x1="13" y1="16" x2="23" y2="16"/><line x1="13" y1="24" x2="23" y2="24"/>
+          <line x1="13" y1="32" x2="23" y2="32"/><line x1="13" y1="40" x2="23" y2="40"/>
+          <rect x="30" y="8" width="16" height="40"/>
+          <line x1="33" y1="16" x2="43" y2="16"/><line x1="33" y1="24" x2="43" y2="24"/>
+          <line x1="33" y1="32" x2="43" y2="32"/><line x1="33" y1="40" x2="43" y2="40"/>
+        </svg>
+        <div class="nm">GPU racks</div>
+        <div class="sb">150&ndash;300 kW</div>
+      </div>
+
+      <div class="conn"><span class="ln top"></span><span class="ln bot"></span></div>
+
+      <div class="plant">
+        <div class="pn">Thermocline</div>
+        <div class="pt fade" id="ptech">Dry cooler<br>+ adiabatic</div>
+      </div>
+
+      <div class="conn"><span class="ln top"></span><span class="ln bot"></span></div>
+
+      <div class="endp sink-w">
+        <div class="fade" id="psink">
+          <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true" id="sinkicon">
+            <circle cx="28" cy="28" r="17"/>
+            <circle cx="28" cy="28" r="3"/>
+            <path d="M30 25 Q39 16 43 24"/>
+            <path d="M26 31 Q17 40 13 32"/>
+            <path d="M31 30 Q42 33 38 41"/>
+            <path d="M25 26 Q14 23 18 15"/>
+          </svg>
+          <div class="nm" id="sinknm">Ambient air</div>
+        </div>
+      </div>
     </div>
-    <a class="email-mid reveal" href="mailto:approach@thermocline.io">approach@thermocline.io</a>
+
+    <p class="caption fade reveal" id="pcap"><b>Dry-primary with adiabatic assist.</b> Full performance through extreme ambient, with minimal water.</p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
     <span class="label reveal">What we do</span>
-    <div class="steps">
-      <div class="step reveal"><div class="n">01</div><div class="t">Assess</div><div class="d">Study the site, climate, water, grid, compute, and operating requirements.</div></div>
-      <div class="step reveal"><div class="n">02</div><div class="t">Propose</div><div class="d">The best approach for the site, evaluated across every cooling technology.</div></div>
-      <div class="step reveal"><div class="n">03</div><div class="t">Prove</div><div class="d">Full thermal modeling, analysis, and validation before anything is built.</div></div>
-      <div class="step reveal"><div class="n">04</div><div class="t">Deliver</div><div class="d">Engineer the plant and supply it through proven vendors and a global manufacturing network.</div></div>
-      <div class="step reveal"><div class="n">05</div><div class="t">Run</div><div class="d">Custom hardware and control software that make the whole plant behave as one optimized system.</div></div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <span class="label reveal">How we work</span>
-    <h2 class="reveal">Lean by design. <b>Fast by default.</b></h2>
-    <p class="team-body reveal" style="margin-bottom:18px">First-principles engineering, no-frills execution, and a small team that moves quickly, without sacrificing efficiency or performance. We build differently than the industry norm because that's how a plant actually ships on schedule and works.</p>
-    <p class="team-body reveal">And we prove our claims rather than just make them. We regularly build test rigs and climate chambers to verify and validate performance under real conditions, and we stress-test designs to their limits before they ever reach a site. If we say a plant holds its approach temperature through a desert summer, we've measured it.</p>
-    <div class="tags reveal">
-      <span class="tag">First principles</span>
-      <span class="tag">No frills</span>
-      <span class="tag">Aggressive timelines</span>
-      <span class="tag">Test rigs</span>
-      <span class="tag">Climate chambers</span>
-      <span class="tag">Stress testing</span>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <span class="label reveal">The connective tissue</span>
-    <h2 class="reveal">We make a plant of many vendors <b>run as one.</b></h2>
-    <p class="sub reveal">We have deep relationships with the vendors and factories that matter, and the in-house ability to custom-design and build the hardware, controls, and software that make every component work together. We get it built.</p>
-    <div class="grid reveal">
-      <div class="cell"><h3>Thermal modeling</h3><p>Site-specific performance modeling across the full ambient range, proven before it ships.</p></div>
-      <div class="cell"><h3>Custom hardware</h3><p>Bespoke manifolds, valving, and hydraulics that tie disparate equipment together cleanly.</p></div>
-      <div class="cell"><h3>Controls &amp; software</h3><p>In-house PCBs, electrical design, and control software, built to run the whole plant from one place.</p></div>
-      <div class="cell"><h3>Testing &amp; validation</h3><p>IT thermal testing, component testing, proof-of-concept pilots, and pre-deployment validation.</p></div>
-      <div class="cell"><h3>Vendor &amp; factory network</h3><p>Direct relationships across equipment vendors and leading manufacturing facilities worldwide.</p></div>
-      <div class="cell"><h3>Operations support</h3><p>Commissioning, monitoring, and optimization, from a team that runs its own plants at four nines.</p></div>
+    <h2 class="reveal">Five steps. <b>One accountable team.</b></h2>
+    <div class="proc">
+      <div class="pstep reveal"><div class="n">01</div><div class="t">Assess</div><div class="d">Site, climate, water, grid, and compute.</div></div>
+      <div class="pstep reveal"><div class="n">02</div><div class="t">Propose</div><div class="d">The best approach, weighed across every technology.</div></div>
+      <div class="pstep reveal"><div class="n">03</div><div class="t">Prove</div><div class="d">Thermal modeling, validated on our own test rigs.</div></div>
+      <div class="pstep reveal"><div class="n">04</div><div class="t">Deliver</div><div class="d">Built through proven vendors and factories.</div></div>
+      <div class="pstep reveal"><div class="n">05</div><div class="t">Run</div><div class="d">One control system over the whole site.</div></div>
     </div>
   </div>
 </section>
@@ -295,46 +254,25 @@
 <section>
   <div class="wrap">
     <span class="label reveal">Monitoring &amp; control</span>
-    <h2 class="reveal">We build the operating system <b>your site needs.</b></h2>
-    <p class="sub reveal">We design, build, and manage the custom hardware, firmware, and software that monitor and control the plant: predictive control, fail-safes, efficiency targets, and curtailment strategies, all tied into every vendor component on site. The control logic your site calls for, running everything as one system.</p>
+    <h2 class="reveal">Every component, <b>one system.</b></h2>
     <div class="os reveal">
-      <div class="os-top">
+      <div class="os-bar">
         <span class="os-name">Thermocline OS</span>
-        <span class="os-fns">Predict &middot; Protect &middot; Optimize &middot; Curtail &middot; Monitor</span>
+        <span class="os-fns">Predict &middot; Protect &middot; Optimize &middot; Curtail</span>
       </div>
-      <div class="os-tie">Ties into every vendor component</div>
-      <div class="os-row">
-        <span>Chillers</span><span>Dry coolers</span><span>CRAC / CRAH</span><span>Pumps</span><span>CDUs</span><span>Valves</span><span>Sensors</span>
+      <div class="os-stem"></div>
+      <div class="os-tree">
+        <div class="os-items">
+          <span class="os-item">Chillers</span>
+          <span class="os-item">Dry coolers</span>
+          <span class="os-item">Pumps</span>
+          <span class="os-item">CDUs</span>
+          <span class="os-item">Valves</span>
+          <span class="os-item">Sensors</span>
+        </div>
       </div>
+      <p class="os-sub">Custom hardware, firmware, and software. Vendor-neutral by design.</p>
     </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <span class="label reveal">The team</span>
-    <h2 class="reveal">An unlikely team for <b>a hard problem.</b></h2>
-    <p class="team-body reveal">We come from scientific research, medical-device and algorithm development, robotics, and above all, mission-critical data center development with proven, large-scale deployments. That range is why we see cooling problems others miss, and solve them with physics, hardware, and software most cooling firms don't have under one roof.</p>
-    <div class="tags reveal">
-      <span class="tag">Scientific research</span>
-      <span class="tag">Medical devices &amp; algorithms</span>
-      <span class="tag">Robotics</span>
-      <span class="tag">Mission-critical data centers</span>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <span class="label reveal">How we fit</span>
-    <p class="fit-note reveal">We're the cooling specialist in the middle, partnering with MEP firms for stamps and integration, and with equipment vendors for supply. Not a competitor to either. The team everyone wants in the room.</p>
-    <div class="triad reveal">
-      <div class="node"><span class="nk">Operators</span><span class="role">Site · capital · demand</span></div>
-      <div class="node"><span class="nk">MEP Firms</span><span class="role">Stamps · integration</span></div>
-      <div class="node"><span class="nk">Vendors</span><span class="role">Equipment supply</span></div>
-    </div>
-    <div class="converge reveal">&darr;</div>
-    <div class="hub reveal"><b>Thermocline</b><div>The cooling specialist</div></div>
   </div>
 </section>
 
@@ -342,7 +280,7 @@
   <div class="wrap">
     <span class="label reveal">Start with your site</span>
     <h2 class="reveal">Tell us where you're building. <b>We'll tell you the best way to cool it.</b></h2>
-    <p class="reveal">A site assessment is the fastest way to see how we work: climate and requirement analysis, candidate architectures, and a defensible recommendation for your specific build.</p>
+    <p class="reveal">Send the site. We come back with a defensible read.</p>
     <a class="email-big reveal" href="mailto:approach@thermocline.io">approach@thermocline.io</a>
     <p class="email-cap reveal">Every design starts with the approach</p>
   </div>
@@ -354,16 +292,83 @@
       <span class="mark-grad" style="font-weight:600">Thermocline</span>
       <span>Critical cooling infrastructure</span>
     </div>
-    <span>🇺🇸 San Francisco · 🇩🇰 Copenhagen</span>
+    <span>&#127482;&#127480; San Francisco &middot; &#127465;&#127472; Copenhagen</span>
     <span>Edge to gigawatt</span>
   </div>
 </footer>
 
 <script>
+(function(){
   var io=new IntersectionObserver(function(es){
     es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
   },{threshold:.12});
   document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  /* schematic states */
+  var ICONS={
+    fan:'<circle cx="28" cy="28" r="17"/><circle cx="28" cy="28" r="3"/><path d="M30 25 Q39 16 43 24"/><path d="M26 31 Q17 40 13 32"/><path d="M31 30 Q42 33 38 41"/><path d="M25 26 Q14 23 18 15"/>',
+    sea:'<path d="M8 20 q6 -7 12 0 t12 0 t12 0 t4 0"/><path d="M8 30 q6 -7 12 0 t12 0 t12 0 t4 0"/><path d="M8 40 q6 -7 12 0 t12 0 t12 0 t4 0"/>',
+    city:'<rect x="15" y="10" width="26" height="38"/><rect x="20" y="16" width="5" height="5"/><rect x="31" y="16" width="5" height="5"/><rect x="20" y="26" width="5" height="5"/><rect x="31" y="26" width="5" height="5"/><rect x="20" y="36" width="5" height="5"/><rect x="31" y="36" width="5" height="5"/>'
+  };
+  var STATES=[
+    {tech:'Dry cooler<br>+ adiabatic', icon:ICONS.fan, sink:'Ambient air',
+     cap:'<b>Dry-primary with adiabatic assist.</b> Full performance through extreme ambient, with minimal water.'},
+    {tech:'Seawater<br>exchange', icon:ICONS.sea, sink:'Deep seawater',
+     cap:'<b>Cold deep water as the primary sink.</b> Stable temperatures, independent of air.'},
+    {tech:'Free cooling<br>+ heat recovery', icon:ICONS.city, sink:'District heat',
+     cap:'<b>Cold air does the work.</b> Waste heat becomes revenue.'},
+    {tech:'High-efficiency<br>chillers', icon:ICONS.fan, sink:'Ambient air',
+     cap:'<b>Engineered to minimum overhead</b> on a constrained footprint.'}
+  ];
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  var ptech=document.getElementById('ptech'),
+      psink=document.getElementById('psink'),
+      sinkicon=document.getElementById('sinkicon'),
+      sinknm=document.getElementById('sinknm'),
+      pcap=document.getElementById('pcap');
+  var cur=0, timer=null, userTouched=false;
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setState(i){
+    if(i===cur && arguments.length>1===false && tabs[i].getAttribute('aria-selected')==='true' && ptech.dataset.init){return;}
+    cur=i;
+    tabs.forEach(function(t,j){t.setAttribute('aria-selected', j===i ? 'true':'false');});
+    [ptech,psink,pcap].forEach(function(el){el.classList.add('out');});
+    setTimeout(function(){
+      var s=STATES[i];
+      ptech.innerHTML=s.tech;
+      sinkicon.innerHTML=s.icon;
+      sinknm.textContent=s.sink;
+      pcap.innerHTML=s.cap;
+      [ptech,psink,pcap].forEach(function(el){el.classList.remove('out');});
+    }, reduced?0:280);
+    ptech.dataset.init='1';
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      userTouched=true;
+      if(timer){clearInterval(timer);timer=null;}
+      setState(parseInt(t.dataset.i,10), true);
+    });
+  });
+
+  /* auto-cycle while in view, until the user interacts */
+  var schem=document.querySelector('.schem');
+  if(!reduced){
+    var vio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(userTouched) return;
+        if(e.isIntersecting && !timer){
+          timer=setInterval(function(){ setState((cur+1)%STATES.length, true); }, 4200);
+        } else if(!e.isIntersecting && timer){
+          clearInterval(timer); timer=null;
+        }
+      });
+    },{threshold:.4});
+    vio.observe(schem);
+  }
+})();
 </script>
 </body>
 </html>
