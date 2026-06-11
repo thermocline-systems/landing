@@ -112,16 +112,20 @@
   .os-sub{font-size:14.5px;color:var(--body-c);max-width:56ch;line-height:1.65;margin-top:20px}
 
   /* ============ partner / how we fit ============ */
-  .partner-note{font-size:16px;color:var(--body-c);max-width:60ch;line-height:1.65;margin:18px 0 42px;text-wrap:pretty}
-  .partner-note b{color:var(--ink);font-weight:500}
-  .triad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:760px}
-  .node{text-align:center;border:1px solid var(--hair-2);padding:22px 12px}
-  .node .nk{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px}
-  .node .role{font-size:12px;letter-spacing:.04em;color:var(--muted)}
-  .converge{text-align:center;color:var(--faint);font-size:20px;font-weight:300;margin:14px 0;max-width:760px}
-  .hub{text-align:center;background:var(--ink);color:#fff;padding:26px;max-width:760px}
-  .hub b{font-size:16px;font-weight:600;letter-spacing:.02em}
-  .hub div{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-top:6px}
+  .partner-note{font-size:16px;color:var(--body-c);max-width:52ch;line-height:1.65;margin:16px 0 40px;text-wrap:pretty}
+  .fitgraph{max-width:540px}
+  .fit-srcs{display:flex;justify-content:space-between;text-align:center}
+  .fit-src{flex:1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink)}
+  .fit-merge{position:relative;height:40px}
+  .fit-merge i{position:absolute;background:var(--line)}
+  .fit-merge .d{top:0;width:1px;height:20px}
+  .fit-merge .d1{left:16.667%}
+  .fit-merge .d2{left:50%}
+  .fit-merge .d3{left:83.333%}
+  .fit-merge .bus{top:20px;left:16.667%;right:16.667%;height:1px}
+  .fit-merge .stem{top:20px;left:50%;width:1px;height:20px}
+  .fit-hubwrap{text-align:center}
+  .fit-hub{display:inline-block;background:var(--ink);color:#fff;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:13px 32px}
 
   /* ============ contact ============ */
   .contact{padding:110px 0}
@@ -169,7 +173,9 @@
     .os-items{flex-wrap:wrap;gap:8px;justify-content:flex-start;margin-top:16px}
     .os-item{flex:0 0 auto;padding:9px 14px;border:1px solid var(--hair-2)}
     .os-stem{display:none}
-    .triad{grid-template-columns:1fr}
+    .fit-srcs{flex-direction:column;gap:8px;text-align:left}
+    .fit-merge{display:none}
+    .fit-hubwrap{text-align:left;margin-top:16px}
   }
 </style>
 </head>
@@ -292,15 +298,17 @@
 <section>
   <div class="wrap">
     <span class="label reveal">How we fit</span>
-    <h2 class="reveal">Not a competitor. <b>The right partner.</b></h2>
-    <p class="partner-note reveal">We're the cooling specialist in the middle, partnering with MEP firms for stamps and integration, and with equipment vendors for supply. The team everyone wants in the room.</p>
-    <div class="triad reveal">
-      <div class="node"><span class="nk">Operators</span><span class="role">Site · capital · demand</span></div>
-      <div class="node"><span class="nk">MEP Firms</span><span class="role">Stamps · integration</span></div>
-      <div class="node"><span class="nk">Vendors</span><span class="role">Equipment supply</span></div>
+    <h2 class="reveal">The <b>right partner</b> in the room.</h2>
+    <p class="partner-note reveal">The cooling specialist between operators, MEP firms, and equipment vendors.</p>
+    <div class="fitgraph reveal">
+      <div class="fit-srcs">
+        <span class="fit-src">Operators</span>
+        <span class="fit-src">MEP Firms</span>
+        <span class="fit-src">Vendors</span>
+      </div>
+      <div class="fit-merge"><i class="d d1"></i><i class="d d2"></i><i class="d d3"></i><i class="bus"></i><i class="stem"></i></div>
+      <div class="fit-hubwrap"><span class="fit-hub">Thermocline</span></div>
     </div>
-    <div class="converge reveal">&darr;</div>
-    <div class="hub reveal"><b>Thermocline</b><div>The cooling specialist</div></div>
   </div>
 </section>
 
