@@ -55,14 +55,6 @@
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
   }
-  .stealth{ color:var(--faint); }
-  .stealth::before{
-    content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
-    background:#3c9c6a; margin-right:9px; vertical-align:middle;
-    box-shadow:0 0 8px rgba(60,156,106,.9); animation: pulse 2.6s ease-in-out infinite;
-  }
-  @keyframes pulse{ 0%,100%{opacity:.45} 50%{opacity:1} }
-
   .mid{ flex:1; display:flex; flex-direction:column; justify-content:center; max-width:20ch; }
   h1{
     font-weight:300; font-size:clamp(42px, 8.6vw, 98px);
@@ -90,9 +82,6 @@
     .foot{ flex-direction:column; align-items:flex-start; gap:14px; }
     .mid{ max-width:15ch; }
   }
-  @media (prefers-reduced-motion:reduce){
-    .stealth::before{ animation:none; }
-  }
 </style>
 </head>
 <body>
@@ -104,7 +93,6 @@
   <div class="ui">
     <div class="row">
       <span class="wm">Thermocline</span>
-      <span class="mono stealth">In&nbsp;stealth</span>
     </div>
 
     <div class="mid">
